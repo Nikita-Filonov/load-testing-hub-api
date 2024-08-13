@@ -1,0 +1,10 @@
+from fastapi import APIRouter
+
+from apps.analytics.api.average_analytics import average_analytics_router
+from apps.analytics.api.methods_analytics import methods_analytics_router
+from apps.analytics.api.results_analytics import results_analytics_router
+
+analytics_app_router = APIRouter()
+analytics_app_router.include_router(results_analytics_router)
+analytics_app_router.include_router(methods_analytics_router)
+analytics_app_router.include_router(average_analytics_router)
