@@ -1,8 +1,9 @@
-# Load testing metrics API
+# Load testing hub API
 
 If you have any questions, you can ask [@Nikita Filonov](https://t.me/sound_right)
 
 ## Project setup
+
 ```shell
 git clone https://github.com/Nikita-Filonov/load-testing-hub-api.git
 cd load-testing-hub-api
@@ -12,6 +13,7 @@ uvicorn main:app --reload
 ```
 
 ## Apply migrations
+
 ```shell
 alemibc upgrade head
 ```
