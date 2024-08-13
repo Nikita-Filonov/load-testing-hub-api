@@ -11,7 +11,7 @@ from apps.results.api import results_app_router
 from apps.services.api import services_app_router
 from config import Settings, get_settings
 
-app = FastAPI(title="Load testing metrics API", docs_url=None, redoc_url=None)
+app = FastAPI(title="Load testing hub API", docs_url=None, redoc_url=None)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

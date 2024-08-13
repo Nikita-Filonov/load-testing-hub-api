@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         env_nested_delimiter=".",
     )
 
-    app_name: str = Field(default="Load testing metrics API", env="APP_NAME")
+    app_name: str = Field(default="Load testing hub API", env="APP_NAME")
     app_logo_path: str = Field(default="/static/logo.png", env="APP_LOGO_PATH")
 
     postgres: DatabaseClientConfig = DatabaseClientConfig()
