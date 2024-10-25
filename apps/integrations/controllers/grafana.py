@@ -17,8 +17,8 @@ async def get_grafana_dashboard_url(
     )
 
     builder = GrafanaDashboardURLBuilder(
-        to_time=str(int(query.started_at.timestamp()) * 1000),
-        from_time=str(int(query.finished_at.timestamp()) * 1000),
+        to_time=str(int(query.finished_at.timestamp()) * 1000),
+        from_time=str(int(query.started_at.timestamp()) * 1000),
         var_cluster=service.cluster,
         var_namespace=service.namespace,
     )
