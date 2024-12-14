@@ -1,20 +1,16 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.integrations.schema.integrations import GetIntegrationURLQuery
 from apps.integrations.schema.kibana import GetKibanaDiscoverURLResponse
 from config import Settings
-from services.postgres.models import ServicesModel
+from services.postgres.repositories.services import ServicesRepository
 from utils.integrations.kibana import KibanaDiscoverURLBuilder
 
 
 async def get_kibana_discover_url(
         query: GetIntegrationURLQuery,
         setting: Settings,
-        session: AsyncSession
+        services_repository: ServicesRepository
 ) -> GetKibanaDiscoverURLResponse:
-    service = await ServicesModel.get(
-        session, clause_filter=(ServicesModel.name == query.service,)
-    )
+    service = await services_repository.get_by_id(query.service_id)
 
     builder = KibanaDiscoverURLBuilder(
         to_time=str(query.finished_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'),

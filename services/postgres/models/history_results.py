@@ -17,7 +17,7 @@ class HistoryResultsModel(MixinModel):
     average_response_time: Mapped[float] = Column(Float, nullable=False)
     response_time_percentile_95: Mapped[float] = Column(Float, nullable=False)
 
-    load_test_results_id: Mapped[int] = Column(
+    load_test_result_id: Mapped[int] = Column(
         Integer,
         ForeignKey("load_test_results.id", ondelete="CASCADE"),
         nullable=False

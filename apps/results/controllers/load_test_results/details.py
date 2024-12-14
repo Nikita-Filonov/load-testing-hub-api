@@ -1,49 +1,34 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from apps.results.controllers.load_test_results.compares import get_load_test_result_compare
+from apps.results.controllers.load_test_results.compares import get_load_test_result_summary_compare
 from apps.results.schema.load_test_results.results import LoadTestResultDetails, GetLoadTestResultDetailsResponse, \
     GetLoadTestResultDetailsQuery
-from services.postgres.models.load_test_results import LoadTestResultsModel
-
-
-async def get_previous_load_test_result(
-        session: AsyncSession,
-        load_test_result_id: int,
-        service: str,
-        scenario: str | None,
-) -> LoadTestResultsModel | None:
-    filters = (
-        LoadTestResultsModel.id < load_test_result_id,
-        LoadTestResultsModel.service == service
-    )
-    if scenario:
-        filters += (LoadTestResultsModel.scenario == scenario,)
-
-    previous_results = await LoadTestResultsModel.filter(
-        session,
-        limit=1,
-        order_by=(LoadTestResultsModel.id.desc(),),
-        clause_filter=filters
-    )
-
-    return previous_results[0] if len(previous_results) > 0 else None
+from services.postgres.repositories.compare_settings import CompareSettingsRepository
+from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 
 
 async def get_load_test_result_details(
+        load_test_result_id: int,
         query: GetLoadTestResultDetailsQuery,
-        session: AsyncSession
+        compare_settings_repository: CompareSettingsRepository,
+        load_test_results_repository: LoadTestResultsRepository
 ) -> GetLoadTestResultDetailsResponse:
-    result = await LoadTestResultsModel.get(
-        session,
-        clause_filter=(LoadTestResultsModel.id == query.load_test_result_id,)
+    result = await load_test_results_repository.get_by_id(load_test_result_id)
+    previous_result = await load_test_results_repository.get_previous(
+        service_id=result.service_id,
+        scenario_id=query.scenario_id,
+        load_test_result_id=load_test_result_id
     )
-    previous_result = await get_previous_load_test_result(
-        session, query.load_test_result_id, result.service, query.scenario
+
+    compare_settings = await compare_settings_repository.get_or_create(result.service_id)
+    load_test_result_averages = await load_test_results_repository.get_averages(
+        service_id=result.service_id, scenario_id=query.scenario_id
     )
 
     details = LoadTestResultDetails.model_validate(result)
-    details.compare = await get_load_test_result_compare(
-        session, query.scenario, result, previous_result
+    details.compare = get_load_test_result_summary_compare(
+        result=result,
+        previous_result=previous_result,
+        compare_settings=compare_settings,
+        load_test_result_averages=load_test_result_averages
     )
 
     return GetLoadTestResultDetailsResponse(details=details)

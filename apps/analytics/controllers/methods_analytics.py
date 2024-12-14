@@ -1,7 +1,3 @@
-from typing import Sequence
-
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.analytics.schema.analytics.number_of_requests_analytics import GetNumberOfRequestsAnalyticsResponse, \
     NumberOfRequestsAnalytics
 from apps.analytics.schema.analytics.requests_per_second_analytics import GetRequestsPerSecondAnalyticsResponse, \
@@ -9,28 +5,14 @@ from apps.analytics.schema.analytics.requests_per_second_analytics import GetReq
 from apps.analytics.schema.analytics.response_times_analytics import GetResponseTimesAnalyticsResponse, \
     ResponseTimesAnalytics
 from apps.analytics.schema.methods_analytics import GetMethodsAnalyticsQuery
-from services.postgres.models import MethodResultsModel
-
-
-async def get_analytics_method_results(
-        query: GetMethodsAnalyticsQuery,
-        session: AsyncSession
-) -> Sequence[MethodResultsModel]:
-    filters = (
-        MethodResultsModel.method == query.method,
-        MethodResultsModel.created_at.between(query.start_datetime, query.end_datetime)
-    )
-    if query.scenario:
-        filters += (MethodResultsModel.scenario == query.scenario,)
-
-    return await MethodResultsModel.filter(session, clause_filter=filters)
+from services.postgres.repositories.method_results import MethodResultsRepository
 
 
 async def get_methods_number_of_requests_analytics(
         query: GetMethodsAnalyticsQuery,
-        session: AsyncSession
+        method_results_repository: MethodResultsRepository
 ) -> GetNumberOfRequestsAnalyticsResponse:
-    results = await get_analytics_method_results(query, session)
+    results = await method_results_repository.filter(**query.model_dump())
 
     return GetNumberOfRequestsAnalyticsResponse(
         analytics=[
@@ -46,9 +28,9 @@ async def get_methods_number_of_requests_analytics(
 
 async def get_methods_requests_per_second_analytics(
         query: GetMethodsAnalyticsQuery,
-        session: AsyncSession
+        method_results_repository: MethodResultsRepository
 ) -> GetRequestsPerSecondAnalyticsResponse:
-    results = await get_analytics_method_results(query, session)
+    results = await method_results_repository.filter(**query.model_dump())
 
     return GetRequestsPerSecondAnalyticsResponse(
         analytics=[
@@ -64,9 +46,9 @@ async def get_methods_requests_per_second_analytics(
 
 async def get_methods_response_times_analytics(
         query: GetMethodsAnalyticsQuery,
-        session: AsyncSession
+        method_results_repository: MethodResultsRepository
 ) -> GetResponseTimesAnalyticsResponse:
-    results = await get_analytics_method_results(query, session)
+    results = await method_results_repository.filter(**query.model_dump())
 
     return GetResponseTimesAnalyticsResponse(
         analytics=[

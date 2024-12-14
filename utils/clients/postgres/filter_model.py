@@ -2,6 +2,7 @@ from typing import Self, Sequence
 
 from sqlalchemy import select, func, ColumnExpressionArgument
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.base import ExecutableOption
 
 from utils.clients.postgres.abstract_model import AbstractModel
 from utils.clients.postgres.query import build_query
@@ -15,11 +16,12 @@ class FilterModel(AbstractModel):
     async def get(
             cls,
             session: AsyncSession,
+            options: tuple[ExecutableOption, ...] | None = None,
             clause_filter: ColumnExpressionType | None = None,
             **kwargs
     ) -> Self | None:
         query = select(cls).filter_by(**kwargs)
-        query = await build_query(query, clause_filter=clause_filter)
+        query = await build_query(query, options=options, clause_filter=clause_filter)
 
         result = await session.execute(query)
         return result.scalars().first()
@@ -30,6 +32,7 @@ class FilterModel(AbstractModel):
             session: AsyncSession,
             limit: int | None = None,
             offset: int | None = None,
+            options: tuple[ExecutableOption, ...] | None = None,
             distinct: ColumnExpressionType | None = None,
             order_by: ColumnExpressionType | None = None,
             clause_filter: ColumnExpressionType | None = None,
@@ -40,6 +43,7 @@ class FilterModel(AbstractModel):
             query,
             limit=limit,
             offset=offset,
+            options=options,
             distinct=distinct,
             order_by=order_by,
             clause_filter=clause_filter
@@ -63,14 +67,18 @@ class FilterModel(AbstractModel):
         return await session.scalar(query)
 
     @classmethod
-    async def average(
+    async def averages(
             cls,
             session: AsyncSession,
-            column: ColumnExpressionArgument,
+            columns: Sequence[ColumnExpressionArgument],
             clause_filter: ColumnExpressionType | None = None,
             **kwargs
-    ) -> float | None:
-        query = select(func.avg(column)).filter_by(**kwargs)
+    ) -> tuple[float | None, ...] | None:
+        expressions = [func.avg(column).label(column.key) for column in columns]
+
+        query = select(*expressions).filter_by(**kwargs)
         query = await build_query(query, clause_filter=clause_filter)
 
-        return await session.scalar(query)
+        result = await session.execute(query)
+
+        return result.one_or_none()

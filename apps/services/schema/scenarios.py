@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Self
 
 from fastapi import Query
@@ -8,23 +9,31 @@ from utils.schema.database_model import DatabaseModel
 from utils.schema.query_model import QueryModel
 
 
+class ScenarioTag(str, Enum):
+    LEGACY = 'LEGACY'
+    LATEST = 'LATEST'
+    EXPERIMENT = 'EXPERIMENT'
+
+
 class Scenario(DatabaseModel):
+    id: int
     name: str
-    file: str
+    tags: list[ScenarioTag]
+    version: str
 
 
 class ScenarioDetails(Scenario):
-    service: str
+    file: str
     ratio_total: RootRatioResult = Field(alias="ratioTotal")
     ratio_per_class: RootRatioResult = Field(alias="ratioPerClass")
 
 
 class GetScenariosQuery(QueryModel):
-    service: str
+    service_id: int = Field(alias="serviceId")
 
     @classmethod
-    async def as_query(cls, service: str = Query()) -> Self:
-        return GetScenariosQuery(service=service)
+    async def as_query(cls, service_id: int = Query(alias="serviceId")) -> Self:
+        return GetScenariosQuery(service_id=service_id)
 
 
 class GetScenariosResponse(BaseModel):
@@ -35,8 +44,23 @@ class GetScenarioResponse(BaseModel):
     scenario: Scenario
 
 
+class UpdateScenarioRequest(BaseModel):
+    name: str | None = None
+    file: str | None = None
+    tags: list[ScenarioTag] | None = None
+    version: str | None = None
+    ratio_total: RootRatioResult | None = Field(alias="ratioTotal", default=None)
+    ratio_per_class: RootRatioResult | None = Field(alias="ratioPerClass", default=None)
+
+
 class CreateScenarioRequest(BaseModel):
-    scenario: ScenarioDetails
+    name: str
+    file: str
+    tags: list[ScenarioTag]
+    version: str
+    service_id: int = Field(alias="serviceId")
+    ratio_total: RootRatioResult = Field(alias="ratioTotal", default=[])
+    ratio_per_class: RootRatioResult = Field(alias="ratioPerClass", default=[])
 
 
 class GetScenarioDetailsResponse(BaseModel):

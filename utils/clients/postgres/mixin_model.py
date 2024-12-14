@@ -1,4 +1,5 @@
 from utils.clients.postgres.create_model import CreateModel
+from utils.clients.postgres.delete_model import DeleteModel
 from utils.clients.postgres.filter_model import FilterModel
 from utils.clients.postgres.update_model import UpdateModel
 
@@ -6,6 +7,7 @@ from utils.clients.postgres.update_model import UpdateModel
 class MixinModel(
     FilterModel,
     CreateModel,
-    UpdateModel
+    UpdateModel,
+    DeleteModel
 ):
     __abstract__ = True

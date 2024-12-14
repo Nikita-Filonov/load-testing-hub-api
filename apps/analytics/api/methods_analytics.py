@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.analytics.controllers.methods_analytics import get_methods_number_of_requests_analytics, \
     get_methods_requests_per_second_analytics, get_methods_response_times_analytics
@@ -9,7 +8,7 @@ from apps.analytics.schema.analytics.number_of_requests_analytics import GetNumb
 from apps.analytics.schema.analytics.requests_per_second_analytics import GetRequestsPerSecondAnalyticsResponse
 from apps.analytics.schema.analytics.response_times_analytics import GetResponseTimesAnalyticsResponse
 from apps.analytics.schema.methods_analytics import GetMethodsAnalyticsQuery
-from services.postgres.client import get_postgres_session
+from services.postgres.repositories.method_results import MethodResultsRepository, get_method_results_repository
 from utils.routes import APIRoutes
 
 methods_analytics_router = APIRouter(
@@ -24,9 +23,9 @@ methods_analytics_router = APIRouter(
 )
 async def get_methods_number_of_requests_analytics_view(
         query: Annotated[GetMethodsAnalyticsQuery, Depends(GetMethodsAnalyticsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        method_results_repository: Annotated[MethodResultsRepository, Depends(get_method_results_repository)]
 ):
-    return await get_methods_number_of_requests_analytics(query, session)
+    return await get_methods_number_of_requests_analytics(query, method_results_repository)
 
 
 @methods_analytics_router.get(
@@ -35,9 +34,9 @@ async def get_methods_number_of_requests_analytics_view(
 )
 async def get_methods_requests_per_second_analytics_view(
         query: Annotated[GetMethodsAnalyticsQuery, Depends(GetMethodsAnalyticsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        method_results_repository: Annotated[MethodResultsRepository, Depends(get_method_results_repository)]
 ):
-    return await get_methods_requests_per_second_analytics(query, session)
+    return await get_methods_requests_per_second_analytics(query, method_results_repository)
 
 
 @methods_analytics_router.get(
@@ -46,6 +45,6 @@ async def get_methods_requests_per_second_analytics_view(
 )
 async def get_methods_response_times_analytics_view(
         query: Annotated[GetMethodsAnalyticsQuery, Depends(GetMethodsAnalyticsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        method_results_repository: Annotated[MethodResultsRepository, Depends(get_method_results_repository)]
 ):
-    return await get_methods_response_times_analytics(query, session)
+    return await get_methods_response_times_analytics(query, method_results_repository)

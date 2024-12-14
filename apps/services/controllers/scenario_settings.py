@@ -1,30 +1,24 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.services.schema.scenario_settings import GetScenarioSettingsResponse, \
     ScenarioSettings, UpdateScenarioSettingsRequest
-from services.postgres.models import ScenarioSettingsModel
+from services.postgres.repositories.scenario_settings import ScenarioSettingsRepository
 
 
 async def get_scenario_settings(
-        scenario: str,
-        session: AsyncSession
+        scenario_id: int,
+        scenario_settings_repository: ScenarioSettingsRepository,
 ) -> GetScenarioSettingsResponse:
-    settings = await ScenarioSettingsModel.get(
-        session,
-        clause_filter=(ScenarioSettingsModel.scenario == scenario,),
-    )
+    settings = await scenario_settings_repository.get_or_create(scenario_id)
 
     return GetScenarioSettingsResponse(settings=ScenarioSettings.model_validate(settings))
 
 
 async def update_scenario_settings(
+        scenario_id: int,
         request: UpdateScenarioSettingsRequest,
-        session: AsyncSession
+        scenario_settings_repository: ScenarioSettingsRepository,
 ) -> GetScenarioSettingsResponse:
-    settings = await ScenarioSettingsModel.update(
-        session,
-        clause_filter=(ScenarioSettingsModel.scenario == request.settings.scenario,),
-        **request.settings.model_dump(exclude={'scenario'})
+    settings = await scenario_settings_repository.update(
+        scenario_id, request.model_dump(exclude_unset=True)
     )
 
     return GetScenarioSettingsResponse(settings=ScenarioSettings.model_validate(settings))

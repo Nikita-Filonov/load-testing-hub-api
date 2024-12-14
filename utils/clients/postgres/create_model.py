@@ -17,3 +17,8 @@ class CreateModel(AbstractModel):
         await session.commit()
 
         return result.scalars().first()
+
+    @classmethod
+    async def bulk_create(cls, session: AsyncSession, data: list[dict]):
+        session.add_all([cls(**row) for row in data])
+        await session.commit()

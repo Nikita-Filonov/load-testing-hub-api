@@ -1,14 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.analytics.controllers.average_analytics import get_average_analytics, get_average_analytics_scenario_compare
-from apps.analytics.schema.average_analytics import GetAverageAnalyticsResponse, \
-    GetAverageAnalyticsScenarioCompareQuery, \
-    GetAverageAnalyticsScenarioCompareResponse
+from apps.analytics.controllers.average_analytics import get_average_analytics
+from apps.analytics.schema.average_analytics import GetAverageAnalyticsResponse
 from apps.analytics.schema.results_analytics import GetResultsAnalyticsQuery
-from services.postgres.client import get_postgres_session
+from services.postgres.repositories.load_test_results import LoadTestResultsRepository, get_load_test_results_repository
 from utils.routes import APIRoutes
 
 average_analytics_router = APIRouter(
@@ -20,20 +17,6 @@ average_analytics_router = APIRouter(
 @average_analytics_router.get('', response_model=GetAverageAnalyticsResponse)
 async def get_average_analytics_view(
         query: Annotated[GetResultsAnalyticsQuery, Depends(GetResultsAnalyticsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)]
 ):
-    return await get_average_analytics(query, session)
-
-
-@average_analytics_router.get(
-    '/scenario-compare',
-    response_model=GetAverageAnalyticsScenarioCompareResponse
-)
-async def get_average_analytics_scenario_compare_view(
-        query: Annotated[
-            GetAverageAnalyticsScenarioCompareQuery,
-            Depends(GetAverageAnalyticsScenarioCompareQuery.as_query)
-        ],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
-):
-    return await get_average_analytics_scenario_compare(query, session)
+    return await get_average_analytics(query, load_test_results_repository)

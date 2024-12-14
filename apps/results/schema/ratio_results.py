@@ -27,4 +27,4 @@ class GetRatioResultResponse(DatabaseModel):
 
 
 class CreateRatioResultRequest(GetRatioResultResponse):
-    load_test_results_id: int = Field(alias="loadTestResultId")
+    load_test_result_id: int = Field(alias="loadTestResultId")

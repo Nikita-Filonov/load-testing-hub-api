@@ -1,51 +1,55 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from apps.compares.schema.compare_settings import CompareSettings
+from apps.results.schema.load_test_results.compares import LoadTestResultSummaryCompare, \
+    ResponseTimeLoadTestResultSummaryCompareMetric, \
+    MinResponseTimeLoadTestResultSummaryCompareMetric, MaxResponseTimeLoadTestResultSummaryCompareMetric, \
+    NumberOfRequestsLoadTestResultSummaryCompareMetric, NumberOfFailuresLoadTestResultSummaryCompareMetric, \
+    RequestsPerSecondLoadTestResultSummaryCompareMetric, FailuresPerSecondLoadTestResultSummaryCompareMetric
+from services.postgres.models import LoadTestResultsModel, CompareSettingsModel
+from services.postgres.repositories.load_test_results import LoadTestResultsAverages
 
-from apps.results.schema.load_test_results.compares import LoadTestResultCompare, LoadTestResultScenarioCompare, \
-    GetLoadTestResultScenarioCompareResponse, GetLoadTestResultScenarioCompareQuery
-from services.postgres.models.load_test_results import LoadTestResultsModel
-from services.postgres.models.scenario_settings import ScenarioSettingsModel
 
-
-async def get_load_test_result_compare(
-        session: AsyncSession,
-        scenario: str | None,
+def get_load_test_result_summary_compare(
         result: LoadTestResultsModel,
-        previous_result: LoadTestResultsModel | None
-) -> LoadTestResultCompare:
-    average_total_requests_per_second = await (
-        LoadTestResultsModel.get_average_total_requests_per_second_cached(
-            session, service=result.service, scenario=scenario
-        )
-    )
-
-    previous_id: int | None = None
-    previous_total_requests_per_second: float = 0.0
-    if previous_result:
-        previous_id = previous_result.id
-        previous_total_requests_per_second = previous_result.total_requests_per_second
-
-    return LoadTestResultCompare(
-        previous_id=previous_id,
-        current_total_requests_per_second=result.total_requests_per_second,
-        average_total_requests_per_second=average_total_requests_per_second,
-        previous_total_requests_per_second=previous_total_requests_per_second
-    )
-
-
-async def get_load_test_result_scenario_compare(
-        query: GetLoadTestResultScenarioCompareQuery,
-        session: AsyncSession,
-) -> GetLoadTestResultScenarioCompareResponse:
-    result = await LoadTestResultsModel.get(
-        session, clause_filter=(LoadTestResultsModel.id == query.load_test_result_id,)
-    )
-    settings = await ScenarioSettingsModel.get(
-        session, clause_filter=(ScenarioSettingsModel.scenario == result.scenario,)
-    )
-
-    return GetLoadTestResultScenarioCompareResponse(
-        compare=LoadTestResultScenarioCompare(
-            current_requests_per_second=result.total_requests_per_second,
-            scenario_requests_per_second=settings.requests_per_second,
-        )
+        previous_result: LoadTestResultsModel | None,
+        compare_settings: CompareSettingsModel,
+        load_test_result_averages: LoadTestResultsAverages,
+) -> LoadTestResultSummaryCompare:
+    return LoadTestResultSummaryCompare(
+        settings=CompareSettings.model_validate(compare_settings),
+        previous_id=getattr(previous_result, 'id', None),
+        response_time=ResponseTimeLoadTestResultSummaryCompareMetric(
+            actual=result.average_response_time,
+            average=load_test_result_averages.response_time,
+            previous=getattr(previous_result, 'average_response_time', 0.0)
+        ),
+        min_response_time=MinResponseTimeLoadTestResultSummaryCompareMetric(
+            actual=result.min_response_time,
+            average=load_test_result_averages.min_response_time,
+            previous=getattr(previous_result, 'min_response_time', 0.0)
+        ),
+        max_response_time=MaxResponseTimeLoadTestResultSummaryCompareMetric(
+            actual=result.max_response_time,
+            average=load_test_result_averages.max_response_time,
+            previous=getattr(previous_result, 'max_response_time', 0.0)
+        ),
+        number_of_requests=NumberOfRequestsLoadTestResultSummaryCompareMetric(
+            actual=result.total_requests,
+            average=load_test_result_averages.total_requests,
+            previous=getattr(previous_result, 'total_requests', 0.0)
+        ),
+        number_of_failures=NumberOfFailuresLoadTestResultSummaryCompareMetric(
+            actual=result.total_failures,
+            average=load_test_result_averages.total_failures,
+            previous=getattr(previous_result, 'total_failures', 0.0)
+        ),
+        requests_per_second=RequestsPerSecondLoadTestResultSummaryCompareMetric(
+            actual=result.total_requests_per_second,
+            average=load_test_result_averages.total_requests_per_second,
+            previous=getattr(previous_result, 'total_requests_per_second', 0.0)
+        ),
+        failures_per_second=FailuresPerSecondLoadTestResultSummaryCompareMetric(
+            actual=result.total_failures_per_second,
+            average=load_test_result_averages.total_failures_per_second,
+            previous=getattr(previous_result, 'total_failures_per_second', 0.0)
+        ),
     )

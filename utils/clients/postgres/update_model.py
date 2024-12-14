@@ -16,11 +16,12 @@ class UpdateModel(AbstractModel):
             session: AsyncSession,
             clause_filter: ColumnExpressionType,
             **kwargs
-    ) -> Self:
+    ) -> Self | None:
         query = cls.__table__.update().values(**kwargs).returning(cls)
         query = await build_query(query, clause_filter=clause_filter)
 
         result = await session.execute(query)
         await session.commit()
 
-        return cls(**result.mappings().first())
+        if result := result.mappings().first():
+            return cls(**result)

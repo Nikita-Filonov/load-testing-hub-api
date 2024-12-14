@@ -1,17 +1,16 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.results.controllers.load_test_results.compares import get_load_test_result_scenario_compare
-from apps.results.controllers.load_test_results.controllers import create_load_test_result
+from apps.results.controllers.load_test_results.controllers import create_load_test_result, \
+    delete_load_test_result, update_load_test_result
 from apps.results.controllers.load_test_results.details import get_load_test_result_details
 from apps.results.controllers.load_test_results.results import get_load_test_results
-from apps.results.schema.load_test_results.compares import GetLoadTestResultScenarioCompareQuery, \
-    GetLoadTestResultScenarioCompareResponse
 from apps.results.schema.load_test_results.results import GetLoadTestResultsQuery, GetLoadTestResultsResponse, \
-    GetLoadTestResultDetailsResponse, CreateLoadTestResultRequest, GetLoadTestResultDetailsQuery
-from services.postgres.client import get_postgres_session
+    GetLoadTestResultDetailsResponse, CreateLoadTestResultRequest, UpdateLoadTestResultRequest, \
+    GetLoadTestResultDetailsQuery, UpdateLoadTestResultQuery
+from services.postgres.repositories.compare_settings import CompareSettingsRepository, get_compare_settings_repository
+from services.postgres.repositories.load_test_results import LoadTestResultsRepository, get_load_test_results_repository
 from utils.routes import APIRoutes
 
 load_test_results_router = APIRouter(
@@ -21,44 +20,72 @@ load_test_results_router = APIRouter(
 
 
 @load_test_results_router.get('', response_model=GetLoadTestResultsResponse)
-async def get_load_test_results_vew(
+async def get_load_test_results_view(
         query: Annotated[GetLoadTestResultsQuery, Depends(GetLoadTestResultsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        compare_settings_repository: Annotated[CompareSettingsRepository, Depends(get_compare_settings_repository)],
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)]
 ):
-    return await get_load_test_results(query, session)
+    return await get_load_test_results(
+        query,
+        compare_settings_repository=compare_settings_repository,
+        load_test_results_repository=load_test_results_repository
+    )
 
 
 @load_test_results_router.get(
-    '/details',
+    '/details/{load_test_result_id}',
     response_model=GetLoadTestResultDetailsResponse
 )
 async def get_load_test_result_details_view(
-        query: Annotated[
-            GetLoadTestResultDetailsQuery,
-            Depends(GetLoadTestResultDetailsQuery.as_query)
-        ],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        load_test_result_id: int,
+        query: Annotated[GetLoadTestResultDetailsQuery, Depends(GetLoadTestResultDetailsQuery.as_query)],
+        compare_settings_repository: Annotated[CompareSettingsRepository, Depends(get_compare_settings_repository)],
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)]
 ):
-    return await get_load_test_result_details(query, session)
-
-
-@load_test_results_router.get(
-    '/scenario-compare',
-    response_model=GetLoadTestResultScenarioCompareResponse
-)
-async def get_load_test_result_scenario_compare_view(
-        query: Annotated[
-            GetLoadTestResultScenarioCompareQuery,
-            Depends(GetLoadTestResultScenarioCompareQuery.as_query)
-        ],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
-):
-    return await get_load_test_result_scenario_compare(query, session)
+    return await get_load_test_result_details(
+        query=query,
+        load_test_result_id=load_test_result_id,
+        compare_settings_repository=compare_settings_repository,
+        load_test_results_repository=load_test_results_repository
+    )
 
 
 @load_test_results_router.post('', response_model=GetLoadTestResultDetailsResponse)
-async def crate_load_test_result_view(
+async def create_load_test_result_view(
         request: CreateLoadTestResultRequest,
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        compare_settings_repository: Annotated[CompareSettingsRepository, Depends(get_compare_settings_repository)],
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)],
 ):
-    return await create_load_test_result(request, session)
+    return await create_load_test_result(
+        request,
+        compare_settings_repository=compare_settings_repository,
+        load_test_results_repository=load_test_results_repository
+    )
+
+
+@load_test_results_router.patch(
+    '/{load_test_result_id}',
+    response_model=GetLoadTestResultDetailsResponse
+)
+async def update_load_test_result_view(
+        load_test_result_id: int,
+        request: UpdateLoadTestResultRequest,
+        query: Annotated[UpdateLoadTestResultQuery, Depends(UpdateLoadTestResultQuery.as_query)],
+        compare_settings_repository: Annotated[CompareSettingsRepository, Depends(get_compare_settings_repository)],
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)],
+):
+    return await update_load_test_result(
+        query=query,
+        request=request,
+        load_test_result_id=load_test_result_id,
+        compare_settings_repository=compare_settings_repository,
+        load_test_results_repository=load_test_results_repository
+    )
+
+
+@load_test_results_router.delete('/{load_test_result_id}')
+async def delete_load_test_result_view(
+        load_test_result_id: int,
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)],
+):
+    return await delete_load_test_result(load_test_result_id, load_test_results_repository)

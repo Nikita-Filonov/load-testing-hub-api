@@ -1,27 +1,35 @@
-from typing import Self
+from pydantic import BaseModel, HttpUrl
 
-from fastapi import Query
-from pydantic import BaseModel, HttpUrl, Field
-
+from services.postgres.models.services import ServiceType
 from utils.schema.database_model import DatabaseModel
-from utils.schema.query_model import QueryModel
 
 
 class Service(DatabaseModel):
+    id: int
     url: HttpUrl
     name: str
-    is_internal: bool = Field(alias="isInternal")
+    type: ServiceType
 
 
-class GetServicesQuery(QueryModel):
-    with_internal: bool = Field(default=False, alias="withInternal")
+class ServiceDetails(Service):
+    cluster: str
+    namespace: str
 
-    @classmethod
-    async def as_query(
-            cls,
-            with_internal: bool = Query(default=False, alias="withInternal")
-    ) -> Self:
-        return GetServicesQuery(with_internal=with_internal)
+
+class CreateServiceRequest(BaseModel):
+    url: HttpUrl
+    name: str
+    type: ServiceType
+    cluster: str
+    namespace: str
+
+
+class UpdateServiceRequest(BaseModel):
+    url: HttpUrl | None = None
+    name: str | None = None
+    type: ServiceType | None = None
+    cluster: str | None = None
+    namespace: str | None = None
 
 
 class GetServicesResponse(BaseModel):
@@ -30,3 +38,7 @@ class GetServicesResponse(BaseModel):
 
 class GetServiceResponse(BaseModel):
     service: Service
+
+
+class GetServiceDetailsResponse(BaseModel):
+    details: ServiceDetails

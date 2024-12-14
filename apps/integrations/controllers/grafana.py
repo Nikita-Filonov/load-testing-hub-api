@@ -1,20 +1,16 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from apps.integrations.schema.grafana import GetGrafanaDashboardURLResponse
 from apps.integrations.schema.integrations import GetIntegrationURLQuery
 from config import Settings
-from services.postgres.models import ServicesModel
+from services.postgres.repositories.services import ServicesRepository
 from utils.integrations.grafana import GrafanaDashboardURLBuilder
 
 
 async def get_grafana_dashboard_url(
         query: GetIntegrationURLQuery,
         setting: Settings,
-        session: AsyncSession
+        services_repository: ServicesRepository
 ) -> GetGrafanaDashboardURLResponse:
-    service = await ServicesModel.get(
-        session, clause_filter=(ServicesModel.name == query.service,)
-    )
+    service = await services_repository.get_by_id(query.service_id)
 
     builder = GrafanaDashboardURLBuilder(
         to_time=str(int(query.finished_at.timestamp()) * 1000),

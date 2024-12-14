@@ -18,7 +18,7 @@ class RatioResultsModel(MixinModel):
     ratio_total: Mapped[list[RatioResultDict]] = Column(JSON, nullable=False)
     ratio_per_class: Mapped[list[RatioResultDict]] = Column(JSON, nullable=False)
 
-    load_test_results_id: Mapped[int] = Column(
+    load_test_result_id: Mapped[int] = Column(
         Integer,
         ForeignKey("load_test_results.id", ondelete="CASCADE"),
         nullable=False,

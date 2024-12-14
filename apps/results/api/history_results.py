@@ -1,14 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from apps.results.controllers.history_results.compares import get_history_results_compare
-from apps.results.controllers.history_results.results import get_history_results, create_history_results
-from apps.results.schema.history_results.compares import GetHistoryResultsCompareResponse
-from apps.results.schema.history_results.results import GetHistoryResultsResponse, GetHistoryResultsQuery, \
+from apps.results.controllers.history_results import get_history_results, create_history_results
+from apps.results.schema.history_results import GetHistoryResultsResponse, GetHistoryResultsQuery, \
     CreateHistoryResultsRequest
-from services.postgres.client import get_postgres_session
+from services.postgres.repositories.history_results import HistoryResultsRepository, get_history_results_repository
 from utils.routes import APIRoutes
 
 history_results_router = APIRouter(
@@ -20,22 +17,14 @@ history_results_router = APIRouter(
 @history_results_router.get('', response_model=GetHistoryResultsResponse)
 async def get_history_results_view(
         query: Annotated[GetHistoryResultsQuery, Depends(GetHistoryResultsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        history_results_repository: Annotated[HistoryResultsRepository, Depends(get_history_results_repository)],
 ):
-    return await get_history_results(query, session)
-
-
-@history_results_router.get('/compare', response_model=GetHistoryResultsCompareResponse)
-async def get_history_results_compare_view(
-        query: Annotated[GetHistoryResultsQuery, Depends(GetHistoryResultsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
-):
-    return await get_history_results_compare(query, session)
+    return await get_history_results(query, history_results_repository)
 
 
 @history_results_router.post('')
 async def create_history_results_view(
         request: CreateHistoryResultsRequest,
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        history_results_repository: Annotated[HistoryResultsRepository, Depends(get_history_results_repository)],
 ):
-    return await create_history_results(request, session)
+    return await create_history_results(request, history_results_repository)

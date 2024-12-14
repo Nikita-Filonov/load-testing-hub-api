@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.analytics.controllers.results_analytics import get_results_number_of_requests_analytics, \
     get_results_requests_per_second_analytics, get_results_response_times_analytics
@@ -9,7 +8,7 @@ from apps.analytics.schema.analytics.number_of_requests_analytics import GetNumb
 from apps.analytics.schema.analytics.requests_per_second_analytics import GetRequestsPerSecondAnalyticsResponse
 from apps.analytics.schema.analytics.response_times_analytics import GetResponseTimesAnalyticsResponse
 from apps.analytics.schema.results_analytics import GetResultsAnalyticsQuery
-from services.postgres.client import get_postgres_session
+from services.postgres.repositories.load_test_results import LoadTestResultsRepository, get_load_test_results_repository
 from utils.routes import APIRoutes
 
 results_analytics_router = APIRouter(
@@ -24,9 +23,9 @@ results_analytics_router = APIRouter(
 )
 async def get_results_number_of_requests_analytics_view(
         query: Annotated[GetResultsAnalyticsQuery, Depends(GetResultsAnalyticsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)]
 ):
-    return await get_results_number_of_requests_analytics(query, session)
+    return await get_results_number_of_requests_analytics(query, load_test_results_repository)
 
 
 @results_analytics_router.get(
@@ -35,9 +34,9 @@ async def get_results_number_of_requests_analytics_view(
 )
 async def get_results_requests_per_second_analytics_view(
         query: Annotated[GetResultsAnalyticsQuery, Depends(GetResultsAnalyticsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)]
 ):
-    return await get_results_requests_per_second_analytics(query, session)
+    return await get_results_requests_per_second_analytics(query, load_test_results_repository)
 
 
 @results_analytics_router.get(
@@ -46,6 +45,6 @@ async def get_results_requests_per_second_analytics_view(
 )
 async def get_results_response_times_analytics_view(
         query: Annotated[GetResultsAnalyticsQuery, Depends(GetResultsAnalyticsQuery.as_query)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)]
 ):
-    return await get_results_response_times_analytics(query, session)
+    return await get_results_response_times_analytics(query, load_test_results_repository)

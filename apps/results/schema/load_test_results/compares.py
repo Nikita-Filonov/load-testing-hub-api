@@ -1,75 +1,118 @@
-from typing import Self
+from typing import Literal
 
-from fastapi import Query
-from pydantic import BaseModel, Field, ConfigDict, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
-from utils.common.compare import get_compare_percent
-from utils.schema.query_model import QueryModel
+from apps.compares.schema.compare_settings import CompareSettings
+from utils.common.compare import get_compare_percent_with_weight, ComparePercentWithWeight, get_compare_percent, \
+    ComparePercentDirection
 
 
-class LoadTestResultCompare(BaseModel):
+class LoadTestResultSummaryCompareMetric(BaseModel):
+    actual: float = Field(exclude=True)
+    average: float = Field(exclude=True)
+    previous: float = Field(exclude=True)
+    direction: ComparePercentDirection = Field(exclude=True)
+
+    @computed_field(alias="compareWithAverage")
+    @property
+    def compare_with_average(self) -> float:
+        return get_compare_percent(
+            actual=self.actual,
+            expected=self.average,
+            direction=self.direction
+        )
+
+    @computed_field(alias="compareWithPrevious")
+    @property
+    def compare_with_previous(self) -> float:
+        return get_compare_percent(
+            actual=self.actual,
+            expected=self.previous,
+            direction=self.direction
+        )
+
+
+class ResponseTimeLoadTestResultSummaryCompareMetric(LoadTestResultSummaryCompareMetric):
+    direction: ComparePercentDirection = ComparePercentDirection.LOWER_IS_BETTER
+
+
+class MinResponseTimeLoadTestResultSummaryCompareMetric(LoadTestResultSummaryCompareMetric):
+    direction: ComparePercentDirection = ComparePercentDirection.LOWER_IS_BETTER
+
+
+class MaxResponseTimeLoadTestResultSummaryCompareMetric(LoadTestResultSummaryCompareMetric):
+    direction: ComparePercentDirection = ComparePercentDirection.LOWER_IS_BETTER
+
+
+class NumberOfRequestsLoadTestResultSummaryCompareMetric(LoadTestResultSummaryCompareMetric):
+    direction: ComparePercentDirection = ComparePercentDirection.HIGHER_IS_BETTER
+
+
+class NumberOfFailuresLoadTestResultSummaryCompareMetric(LoadTestResultSummaryCompareMetric):
+    direction: ComparePercentDirection = ComparePercentDirection.LOWER_IS_BETTER
+
+
+class RequestsPerSecondLoadTestResultSummaryCompareMetric(LoadTestResultSummaryCompareMetric):
+    direction: ComparePercentDirection = ComparePercentDirection.HIGHER_IS_BETTER
+
+
+class FailuresPerSecondLoadTestResultSummaryCompareMetric(LoadTestResultSummaryCompareMetric):
+    direction: ComparePercentDirection = ComparePercentDirection.LOWER_IS_BETTER
+
+
+class LoadTestResultSummaryCompare(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
+
+    settings: CompareSettings = Field(exclude=True)
 
     previous_id: int | None = Field(default=None, alias="previousId")
-    current_total_requests_per_second: float = Field(alias="currentTotalRequestsPerSecond")
-    average_total_requests_per_second: float = Field(alias="averageTotalRequestsPerSecond")
-    previous_total_requests_per_second: float = Field(alias="previousTotalRequestsPerSecond")
+    response_time: ResponseTimeLoadTestResultSummaryCompareMetric = Field(exclude=True)
+    min_response_time: MinResponseTimeLoadTestResultSummaryCompareMetric = Field(exclude=True)
+    max_response_time: MaxResponseTimeLoadTestResultSummaryCompareMetric = Field(exclude=True)
+    number_of_requests: NumberOfRequestsLoadTestResultSummaryCompareMetric = Field(exclude=True)
+    number_of_failures: NumberOfFailuresLoadTestResultSummaryCompareMetric = Field(exclude=True)
+    requests_per_second: RequestsPerSecondLoadTestResultSummaryCompareMetric = Field(exclude=True)
+    failures_per_second: FailuresPerSecondLoadTestResultSummaryCompareMetric = Field(exclude=True)
 
-    @computed_field(alias="totalRequestsPerSecondCompareWithAverage")
-    def total_requests_per_second_compare_with_average(self) -> float:
-        return get_compare_percent(
-            previous=self.average_total_requests_per_second,
-            current=self.current_total_requests_per_second
-        )
+    def get_compare_weights(
+            self,
+            compare_with: Literal['compare_with_average', 'compare_with_previous']
+    ) -> list[ComparePercentWithWeight]:
+        return [
+            ComparePercentWithWeight(
+                weight=self.settings.response_time_weight,
+                percent=getattr(self.response_time, compare_with)
+            ),
+            ComparePercentWithWeight(
+                weight=self.settings.min_response_time_weight,
+                percent=getattr(self.min_response_time, compare_with)
+            ),
+            ComparePercentWithWeight(
+                weight=self.settings.max_response_time_weight,
+                percent=getattr(self.max_response_time, compare_with)
+            ),
+            ComparePercentWithWeight(
+                weight=self.settings.number_of_requests_weight,
+                percent=getattr(self.number_of_requests, compare_with)
+            ),
+            ComparePercentWithWeight(
+                weight=self.settings.number_of_failures_weight,
+                percent=getattr(self.number_of_failures, compare_with)
+            ),
+            ComparePercentWithWeight(
+                weight=self.settings.requests_per_second_weight,
+                percent=getattr(self.requests_per_second, compare_with)
+            ),
+            ComparePercentWithWeight(
+                weight=self.settings.failures_per_second_weight,
+                percent=getattr(self.failures_per_second, compare_with)
+            )
+        ]
 
-    @computed_field(alias="totalRequestsPerSecondCompareWithPrevious")
-    def total_requests_per_second_compare_with_previous(self) -> float:
-        return get_compare_percent(
-            previous=self.previous_total_requests_per_second,
-            current=self.current_total_requests_per_second
-        )
+    @computed_field(alias="compareWithAverage")
+    def compare_with_average(self) -> float:
+        return get_compare_percent_with_weight(self.get_compare_weights('compare_with_average'))
 
-    @field_validator('current_total_requests_per_second')
-    def validate_current_total_requests_per_second(cls, value: float) -> float:
-        return round(value, 2)
-
-    @field_validator('average_total_requests_per_second')
-    def validate_average_total_requests_per_second(cls, value: float) -> float:
-        return round(value, 2)
-
-    @field_validator('previous_total_requests_per_second')
-    def validate_previous_total_requests_per_second(cls, value: float) -> float:
-        return round(value, 2)
-
-
-class LoadTestResultScenarioCompare(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    current_requests_per_second: float = Field(alias="currentRequestsPerSecond")
-    scenario_requests_per_second: float = Field(alias="scenarioRequestsPerSecond")
-
-    @field_validator('current_requests_per_second')
-    def validate_current_requests_per_second(cls, value: float) -> float:
-        return round(value, 2)
-
-    @computed_field(alias="requestsPerSecondCompare")
-    def requests_per_second_compare(self) -> float:
-        return get_compare_percent(
-            previous=self.scenario_requests_per_second,
-            current=self.current_requests_per_second
-        )
-
-
-class GetLoadTestResultScenarioCompareQuery(QueryModel):
-    load_test_result_id: int = Field(alias="loadTestResultId")
-
-    @classmethod
-    async def as_query(
-            cls,
-            load_test_result_id: int = Query(alias="loadTestResultId")
-    ) -> Self:
-        return GetLoadTestResultScenarioCompareQuery(load_test_result_id=load_test_result_id)
-
-
-class GetLoadTestResultScenarioCompareResponse(BaseModel):
-    compare: LoadTestResultScenarioCompare
+    @computed_field(alias="compareWithPrevious")
+    def compare_with_previous(self) -> float:
+        return get_compare_percent_with_weight(self.get_compare_weights('compare_with_previous'))

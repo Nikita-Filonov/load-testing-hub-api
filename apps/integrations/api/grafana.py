@@ -1,13 +1,12 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from apps.integrations.controllers.grafana import get_grafana_dashboard_url
 from apps.integrations.schema.grafana import GetGrafanaDashboardURLResponse
 from apps.integrations.schema.integrations import GetIntegrationURLQuery
 from config import get_settings, Settings
-from services.postgres.client import get_postgres_session
+from services.postgres.repositories.services import ServicesRepository, get_services_repository
 from utils.routes import APIRoutes
 
 grafana_router = APIRouter(
@@ -20,6 +19,6 @@ grafana_router = APIRouter(
 async def get_grafana_dashboard_url_view(
         query: Annotated[GetIntegrationURLQuery, Depends(GetIntegrationURLQuery.as_query)],
         settings: Annotated[Settings, Depends(get_settings)],
-        session: Annotated[AsyncSession, Depends(get_postgres_session)]
+        services_repository: Annotated[ServicesRepository, Depends(get_services_repository)]
 ):
-    return await get_grafana_dashboard_url(query, settings, session)
+    return await get_grafana_dashboard_url(query, settings, services_repository)

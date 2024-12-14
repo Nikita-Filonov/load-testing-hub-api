@@ -1,19 +1,22 @@
 import functools
 import time
-from typing import Callable, Coroutine
+from typing import Callable, Coroutine, Any
+
+Key = tuple[str, frozenset[tuple[str, Any]]]
+Value = tuple[Any, float]
 
 
 class CacheStore:
     def __init__(self):
-        self.cache = {}
+        self.cache: dict[Key, Value] = {}
 
-    def set_value(self, key: tuple, result):
+    def set_value(self, key: Key, result):
         self.cache[key] = (result, time.time())
 
-    def is_cached(self, key: tuple) -> bool:
+    def is_cached(self, key: Key) -> bool:
         return key in self.cache
 
-    def get_cached_result(self, key: tuple, lifetime: int):
+    def get_cached_result(self, key: Key, lifetime: int):
         result, timestamp = self.cache[key]
 
         if time.time() - timestamp <= lifetime:
@@ -30,7 +33,7 @@ def async_cache(lifetime: int = 60):
 
         @functools.wraps(func)
         async def inner(*args, **kwargs):
-            key = (func, frozenset(kwargs.items()))
+            key = (func.__name__, frozenset(kwargs.items()))
 
             if cache_store.is_cached(key):
                 result = cache_store.get_cached_result(key, lifetime)

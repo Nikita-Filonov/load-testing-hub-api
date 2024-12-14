@@ -1,3 +1,5 @@
+from services.postgres.models.compare_settings import CompareSettingsModel
+from services.postgres.models.exception_results import ExceptionResultsModel
 from services.postgres.models.history_results import HistoryResultsModel
 from services.postgres.models.load_test_results import LoadTestResultsModel
 from services.postgres.models.method_results import MethodResultsModel
