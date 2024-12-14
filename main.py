@@ -6,6 +6,7 @@ from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.staticfiles import StaticFiles
 
 from apps.analytics.api import analytics_app_router
+from apps.compares.api import compares_app_router
 from apps.integrations.api import integrations_app_router
 from apps.results.api import results_app_router
 from apps.services.api import services_app_router
@@ -27,6 +28,7 @@ app.add_middleware(
 
 app.include_router(results_app_router, prefix="/api/v1")
 app.include_router(services_app_router, prefix="/api/v1")
+app.include_router(compares_app_router, prefix="/api/v1")
 app.include_router(analytics_app_router, prefix="/api/v1")
 app.include_router(integrations_app_router, prefix="/api/v1")
 
