@@ -5,6 +5,7 @@ from apps.compares.schema.compares.compare import LoadTestResultCompare, Respons
     FailuresPerSecondCompareMetric
 from apps.compares.schema.compares.compare_averages_with_scenario import GetCompareAveragesWithScenarioQuery, \
     GetCompareAveragesWithScenarioResponse
+from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 from services.postgres.repositories.scenario_settings import ScenarioSettingsRepository
@@ -28,6 +29,7 @@ async def get_compare_averages_with_scenario(
 
     return GetCompareAveragesWithScenarioResponse(
         compare=LoadTestResultCompare(
+            context=CompareSettingsContext.COMPARE_AVERAGES_WITH_SCENARIO,
             settings=CompareSettings.model_validate(compare_settings),
             response_time=ResponseTimeCompareMetric(
                 actual=load_test_result_averages.response_time,

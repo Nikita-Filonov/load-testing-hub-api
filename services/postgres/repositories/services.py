@@ -29,11 +29,13 @@ class ServicesRepository(BasePostgresRepository):
             )
         )
 
-    async def filter(self) -> Sequence[ServicesModel]:
+    async def filter(self, types: list[ServiceType] | None = None) -> Sequence[ServicesModel]:
+        filters = (self.model.status == ServiceStatus.ACTIVE,)
+        if types:
+            filters += (self.model.type.in_(types),)
+
         return await self.model.filter(
-            self.session,
-            order_by=(self.model.id,),
-            clause_filter=(self.model.status == ServiceStatus.ACTIVE,)
+            self.session, order_by=(self.model.id,), clause_filter=filters
         )
 
     async def create(self, data: CreateServiceModelDict) -> ServicesModel:

@@ -19,6 +19,20 @@ class ScenarioMethodSettingsDict(TypedDict):
     failures_per_second: float
 
 
+def get_default_scenario_method_settings_dict() -> ScenarioMethodSettingsDict:
+    return ScenarioMethodSettingsDict(
+        method="",
+        response_time=0.0,
+        content_length=0.0,
+        min_response_time=0.0,
+        max_response_time=0.0,
+        number_of_requests=0.0,
+        number_of_failures=0.0,
+        requests_per_second=0.0,
+        failures_per_second=0.0
+    )
+
+
 class ScenarioSettingsModel(MixinModel):
     __tablename__ = "scenario_settings"
 
@@ -43,16 +57,7 @@ class ScenarioSettingsModel(MixinModel):
     )
 
     def get_method_settings_or_default(self, method: str) -> ScenarioMethodSettingsDict:
-        default = ScenarioMethodSettingsDict(
-            method="",
-            response_time=0.0,
-            content_length=0.0,
-            min_response_time=0.0,
-            max_response_time=0.0,
-            number_of_requests=0.0,
-            number_of_failures=0.0,
-            requests_per_second=0.0,
-            failures_per_second=0.0
+        return find(
+            lambda m: m['method'] == method, self.methods_settings,
+            get_default_scenario_method_settings_dict()
         )
-
-        return find(lambda m: m['method'] == method, self.methods_settings, default)

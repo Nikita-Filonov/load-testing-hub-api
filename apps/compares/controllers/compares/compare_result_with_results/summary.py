@@ -9,6 +9,7 @@ from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestR
 from apps.compares.schema.compares.compare_result_with_results import CompareResultWithResults, \
     CompareResultWithResultsAverageSummary
 from services.postgres.models import LoadTestResultsModel, MethodResultsModel, CompareSettingsModel
+from services.postgres.models.compare_settings import CompareSettingsContext
 from utils.common.average import get_average
 
 
@@ -44,6 +45,7 @@ def get_method_result_compare_average_summary(
 
     return MethodResultCompare(
         method=method_result.method,
+        context=CompareSettingsContext.COMPARE_RESULT_WITH_RESULTS,
         settings=CompareSettings.model_validate(settings),
         response_time=ResponseTimeCompareMetric(
             actual=method_result.average_response_time,
@@ -106,6 +108,7 @@ def get_load_test_compare_averages_summary(
     )
 
     return LoadTestResultCompare(
+        context=CompareSettingsContext.COMPARE_RESULT_WITH_RESULTS,
         settings=CompareSettings.model_validate(settings),
         response_time=ResponseTimeCompareMetric(
             actual=load_test_result.average_response_time,

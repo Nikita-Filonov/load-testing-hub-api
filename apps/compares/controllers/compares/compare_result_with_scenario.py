@@ -6,6 +6,7 @@ from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestR
 from apps.compares.schema.compares.compare_result_with_scenario import GetCompareResultWithScenarioQuery, \
     GetCompareResultWithScenarioResponse, CompareResultWithScenario
 from services.postgres.models import MethodResultsModel, CompareSettingsModel, ScenarioSettingsModel
+from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository
@@ -21,6 +22,7 @@ def get_method_result_compare(
 
     return MethodResultCompare(
         method=method_result.method,
+        context=CompareSettingsContext.COMPARE_RESULT_WITH_SCENARIO,
         settings=CompareSettings.model_validate(compare_settings),
         response_time=ResponseTimeCompareMetric(
             actual=method_result.average_response_time,
@@ -82,6 +84,7 @@ async def get_compare_result_with_scenario(
                 for method_result in method_results
             ],
             load_test_result_compare=LoadTestResultCompare(
+                context=CompareSettingsContext.COMPARE_RESULT_WITH_SCENARIO,
                 settings=CompareSettings.model_validate(compare_settings),
                 response_time=ResponseTimeCompareMetric(
                     actual=load_test_result.average_response_time,

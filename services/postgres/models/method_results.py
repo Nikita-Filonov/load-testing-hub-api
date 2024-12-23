@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String, Float, Integer, ForeignKey, DateTime, func
@@ -10,10 +11,16 @@ if TYPE_CHECKING:
     from services.postgres.models import ServicesModel
 
 
+class MethodResultStatus(str, Enum):
+    ACTIVE = 'ACTIVE'
+    DELETED = 'DELETED'
+
+
 class MethodResultsModel(MixinModel):
     __tablename__ = "method_results"
 
     id: Mapped[int] = Column(Integer, nullable=False, primary_key=True, autoincrement=True)
+    status: Mapped[str] = Column(String(50), nullable=False, default=MethodResultStatus.ACTIVE)
     method: Mapped[str] = Column(String(200), nullable=False)
     protocol: Mapped[str] = Column(String(20), nullable=False)
     number_of_requests: Mapped[int] = Column(Integer, nullable=False)

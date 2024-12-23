@@ -7,26 +7,25 @@ from utils.schema.database_model import DatabaseModel
 Weight = confloat(le=1.0)
 
 
-class CompareSettings(DatabaseModel):
-    service_id: int = Field(alias="serviceId")
-    response_time_weight: Weight = Field(alias="responseTimeWeight")
-    min_response_time_weight: Weight = Field(alias="minResponseTimeWeight")
-    max_response_time_weight: Weight = Field(alias="maxResponseTimeWeight")
-    number_of_requests_weight: Weight = Field(alias="numberOfRequestsWeight")
-    number_of_failures_weight: Weight = Field(alias="numberOfFailuresWeight")
-    requests_per_second_weight: Weight = Field(alias="requestsPerSecondWeight")
-    failures_per_second_weight: Weight = Field(alias="failuresPerSecondWeight")
+class CompareSettingsWeights(DatabaseModel):
+    response_time: float = Field(alias="responseTime")
+    min_response_time: float = Field(alias="minResponseTime")
+    max_response_time: float = Field(alias="maxResponseTime")
+    number_of_requests: float = Field(alias="numberOfRequests")
+    number_of_failures: float = Field(alias="numberOfFailures")
+    requests_per_second: float = Field(alias="requestsPerSecond")
+    failures_per_second: float = Field(alias="failuresPerSecond")
 
     @model_validator(mode='after')
     def validate_model(self) -> Self:
         weights = sum([
-            self.response_time_weight,
-            self.min_response_time_weight,
-            self.max_response_time_weight,
-            self.number_of_requests_weight,
-            self.number_of_failures_weight,
-            self.requests_per_second_weight,
-            self.failures_per_second_weight
+            self.response_time,
+            self.min_response_time,
+            self.max_response_time,
+            self.number_of_requests,
+            self.number_of_failures,
+            self.requests_per_second,
+            self.failures_per_second
         ])
 
         if weights > 1:
@@ -35,14 +34,27 @@ class CompareSettings(DatabaseModel):
         return self
 
 
+class CompareSettingsHighlightThreshold(DatabaseModel):
+    compare_with_average: float = Field(alias="compareWithAverage")
+    compare_with_previous: float = Field(alias="compareWithPrevious")
+    compare_result_with_results: float = Field(alias="compareResultWithResults")
+    compare_result_with_averages: float = Field(alias="compareResultWithAverages")
+    compare_result_with_scenario: float = Field(alias="compareResultWithScenario")
+    compare_method_with_scenario: float = Field(alias="compareMethodWithScenario")
+    compare_averages_with_scenario: float = Field(alias="compareAveragesWithScenario")
+
+
+class CompareSettings(DatabaseModel):
+    service_id: int = Field(alias="serviceId")
+    weights: CompareSettingsWeights
+    highlight_threshold: CompareSettingsHighlightThreshold = Field(alias="highlightThreshold")
+
+
 class UpdateCompareSettingsRequest(BaseModel):
-    response_time_weight: Weight | None = Field(alias="responseTimeWeight", default=None)
-    min_response_time_weight: Weight | None = Field(alias="minResponseTimeWeight", default=None)
-    max_response_time_weight: Weight | None = Field(alias="maxResponseTimeWeight", default=None)
-    number_of_requests_weight: Weight | None = Field(alias="numberOfRequestsWeight", default=None)
-    number_of_failures_weight: Weight | None = Field(alias="numberOfFailuresWeight", default=None)
-    requests_per_second_weight: Weight | None = Field(alias="requestsPerSecondWeight", default=None)
-    failures_per_second_weight: Weight | None = Field(alias="failuresPerSecondWeight", default=None)
+    weights: CompareSettingsWeights | None = None
+    highlight_threshold: CompareSettingsHighlightThreshold | None = Field(
+        alias="highlightThreshold", default=None
+    )
 
 
 class GetCompareSettingsResponse(BaseModel):

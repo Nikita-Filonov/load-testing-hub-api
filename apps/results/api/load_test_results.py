@@ -11,6 +11,7 @@ from apps.results.schema.load_test_results.results import GetLoadTestResultsQuer
     GetLoadTestResultDetailsQuery, UpdateLoadTestResultQuery
 from services.postgres.repositories.compare_settings import CompareSettingsRepository, get_compare_settings_repository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository, get_load_test_results_repository
+from services.postgres.repositories.method_results import MethodResultsRepository, get_method_results_repository
 from utils.routes import APIRoutes
 
 load_test_results_router = APIRouter(
@@ -86,6 +87,11 @@ async def update_load_test_result_view(
 @load_test_results_router.delete('/{load_test_result_id}')
 async def delete_load_test_result_view(
         load_test_result_id: int,
+        method_results_repository: Annotated[MethodResultsRepository, Depends(get_method_results_repository)],
         load_test_results_repository: Annotated[LoadTestResultsRepository, Depends(get_load_test_results_repository)],
 ):
-    return await delete_load_test_result(load_test_result_id, load_test_results_repository)
+    return await delete_load_test_result(
+        load_test_result_id,
+        method_results_repository=method_results_repository,
+        load_test_results_repository=load_test_results_repository
+    )

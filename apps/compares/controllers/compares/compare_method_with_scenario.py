@@ -5,6 +5,7 @@ from apps.compares.schema.compares.compare import MethodResultCompare, ResponseT
     FailuresPerSecondCompareMetric
 from apps.compares.schema.compares.compare_method_with_scenario import GetCompareMethodWithScenarioQuery, \
     GetCompareMethodWithScenarioResponse
+from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository
 from services.postgres.repositories.scenario_settings import ScenarioSettingsRepository
@@ -31,6 +32,7 @@ async def get_compare_method_with_scenario(
     return GetCompareMethodWithScenarioResponse(
         compare=MethodResultCompare(
             method=query.method,
+            context=CompareSettingsContext.COMPARE_METHOD_WITH_SCENARIO,
             settings=CompareSettings.model_validate(compare_settings),
             response_time=ResponseTimeCompareMetric(
                 actual=method_result_averages.response_time,

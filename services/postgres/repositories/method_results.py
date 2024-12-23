@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.postgres.client import get_postgres_session
 from services.postgres.models import MethodResultsModel
+from services.postgres.models.method_results import MethodResultStatus
 from utils.clients.postgres.repository import BasePostgresRepository
 
 
@@ -45,6 +46,29 @@ class CreateMethodResultsModelDict(TypedDict):
 class MethodResultsRepository(BasePostgresRepository):
     model = MethodResultsModel
 
+    async def delete(
+            self,
+            service_id: int | None = None,
+            scenario_id: int | None = None,
+            load_test_result_id: int | None = None
+    ):
+        filters = ()
+        if service_id:
+            filters += (self.model.service_id == service_id,)
+
+        if scenario_id:
+            filters += (self.model.scenario_id == scenario_id,)
+
+        if load_test_result_id:
+            filters += (self.model.load_test_result_id == load_test_result_id,)
+
+        if not filters:
+            return
+
+        await self.model.update(
+            self.session, clause_filter=filters, status=MethodResultStatus.DELETED
+        )
+
     async def create_multiple(self, data: list[CreateMethodResultsModelDict]):
         await self.model.bulk_create(self.session, data)
 
@@ -56,7 +80,7 @@ class MethodResultsRepository(BasePostgresRepository):
             end_datetime: datetime | None = None,
             start_datetime: datetime | None = None
     ):
-        filters = ()
+        filters = (self.model.status == MethodResultStatus.ACTIVE,)
         if method:
             filters += (self.model.method == method,)
 
@@ -77,7 +101,10 @@ class MethodResultsRepository(BasePostgresRepository):
             method: str | None = None,
             scenario_id: int | None = None,
     ) -> Sequence[MethodResultsModel]:
-        filters = (self.model.service_id == service_id,)
+        filters = (
+            self.model.status == MethodResultStatus.ACTIVE,
+            self.model.service_id == service_id,
+        )
         if method:
             filters += (func.lower(self.model.method).contains(method.lower()),)
 
@@ -92,7 +119,10 @@ class MethodResultsRepository(BasePostgresRepository):
         return await self.model.filter(
             self.session,
             order_by=(self.model.method,),
-            clause_filter=(self.model.load_test_result_id == load_test_result_id,)
+            clause_filter=(
+                self.model.status == MethodResultStatus.ACTIVE,
+                self.model.load_test_result_id == load_test_result_id,
+            )
         )
 
     async def filter_by_load_test_result_ids_groped(
@@ -102,7 +132,10 @@ class MethodResultsRepository(BasePostgresRepository):
         results = await self.model.filter(
             self.session,
             order_by=(self.model.load_test_result_id,),
-            clause_filter=(self.model.load_test_result_id.in_(load_test_result_ids),)
+            clause_filter=(
+                self.model.status == MethodResultStatus.ACTIVE,
+                self.model.load_test_result_id.in_(load_test_result_ids),
+            )
         )
 
         return {
@@ -120,6 +153,7 @@ class MethodResultsRepository(BasePostgresRepository):
             start_datetime: datetime | None = None
     ) -> MethodResultsAverages:
         filters = (
+            self.model.status == MethodResultStatus.ACTIVE,
             self.model.method == method,
             self.model.service_id == service_id
         )

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Self
 
 from fastapi import Query
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, computed_field
 
 from apps.results.schema.load_test_results.compares import LoadTestResultSummaryCompare
 from apps.services.schema.scenarios import Scenario
@@ -34,17 +34,20 @@ class LoadTestResult(ShortLoadTestResult):
 
     compare: LoadTestResultSummaryCompare | None = None
 
+    @computed_field(alias='duration')
+    def duration(self) -> float:
+        return (self.finished_at - self.started_at).total_seconds()
+
     @field_validator('total_requests_per_second')
     def validate_total_requests_per_second(cls, total_requests_per_second: float) -> float:
         return round(total_requests_per_second, 2)
 
 
 class LoadTestResultDetails(LoadTestResult):
-    scenario_id: int = Field(alias="scenarioId")
-    total_failures_per_second: float = Field(alias="totalFailuresPerSecond")
-    average_response_time: float = Field(alias="averageResponseTime")
     max_response_time: float = Field(alias="maxResponseTime")
     min_response_time: float = Field(alias="minResponseTime")
+    average_response_time: float = Field(alias="averageResponseTime")
+    total_failures_per_second: float = Field(alias="totalFailuresPerSecond")
 
     @field_validator('max_response_time')
     def validate_max_response_time(cls, max_response_time: float) -> float:

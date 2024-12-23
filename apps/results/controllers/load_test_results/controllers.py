@@ -3,6 +3,7 @@ from apps.results.schema.load_test_results.results import GetLoadTestResultDetai
     CreateLoadTestResultRequest, UpdateLoadTestResultRequest, GetLoadTestResultDetailsQuery, UpdateLoadTestResultQuery
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
+from services.postgres.repositories.method_results import MethodResultsRepository
 
 
 async def create_load_test_result(
@@ -22,8 +23,10 @@ async def create_load_test_result(
 
 async def delete_load_test_result(
         load_test_result_id: int,
+        method_results_repository: MethodResultsRepository,
         load_test_results_repository: LoadTestResultsRepository
 ):
+    await method_results_repository.delete(load_test_result_id=load_test_result_id)
     await load_test_results_repository.delete(load_test_result_id=load_test_result_id)
 
 

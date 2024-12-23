@@ -36,9 +36,14 @@ class Method(ShortMethod):
 
 
 class MethodDetails(Method):
+    average_content_length: float = Field(alias="averageContentLength")
     average_max_response_time: float = Field(alias="averageMaxResponseTime")
     average_min_response_time: float = Field(alias="averageMinResponseTime")
     average_failures_per_second: float = Field(alias="averageFailuresPerSecond")
+
+    @field_validator('average_content_length', mode='before')
+    def validate_average_content_length(cls, value: float | None) -> float:
+        return round(value or 0, 2)
 
     @field_validator('average_max_response_time', mode='before')
     def validate_average_max_response_time(cls, value: float | None) -> float:

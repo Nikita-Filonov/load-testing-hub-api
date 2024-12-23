@@ -30,8 +30,8 @@ class Settings(BaseSettings):
 
     postgres: DatabaseClientConfig = DatabaseClientConfig()
 
-    kibana_url: HttpUrl = Field(env="KIBANA_URL")
-    grafana_url: HttpUrl = Field(env="GRAFANA_URL")
+    kibana_url: HttpUrl | None = Field(default=None, env="KIBANA_URL")
+    grafana_url: HttpUrl | None = Field(default=None, env="GRAFANA_URL")
 
 
 @lru_cache

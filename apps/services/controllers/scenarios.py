@@ -1,6 +1,7 @@
 from apps.services.schema.scenarios import CreateScenarioRequest, GetScenariosQuery, GetScenariosResponse, Scenario, \
     GetScenarioDetailsResponse, ScenarioDetails, UpdateScenarioRequest, GetScenarioResponse
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
+from services.postgres.repositories.method_results import MethodResultsRepository
 from services.postgres.repositories.scenario_settings import ScenarioSettingsRepository
 from services.postgres.repositories.scenarios import ScenariosRepository
 
@@ -51,9 +52,11 @@ async def update_scenario(
 async def delete_scenario(
         scenario_id: int,
         scenarios_repository: ScenariosRepository,
+        method_results_repository: MethodResultsRepository,
         load_test_results_repository: LoadTestResultsRepository
 ):
     await scenarios_repository.delete(scenario_id=scenario_id)
+    await method_results_repository.delete(scenario_id=scenario_id)
     await load_test_results_repository.delete(scenario_id=scenario_id)
 
 

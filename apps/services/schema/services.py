@@ -1,7 +1,11 @@
+from typing import Self
+
+from fastapi import Query
 from pydantic import BaseModel, HttpUrl
 
 from services.postgres.models.services import ServiceType
 from utils.schema.database_model import DatabaseModel
+from utils.schema.query_model import QueryModel
 
 
 class Service(DatabaseModel):
@@ -30,6 +34,14 @@ class UpdateServiceRequest(BaseModel):
     type: ServiceType | None = None
     cluster: str | None = None
     namespace: str | None = None
+
+
+class GetServicesQuery(QueryModel):
+    types: list[ServiceType] | None = None
+
+    @classmethod
+    async def as_query(cls, types: list[ServiceType] | None = Query(default=None)) -> Self:
+        return GetServicesQuery(types=types)
 
 
 class GetServicesResponse(BaseModel):

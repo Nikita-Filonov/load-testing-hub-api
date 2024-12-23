@@ -11,6 +11,7 @@ from apps.compares.schema.compares.compare_result_with_results import GetCompare
     GetCompareResultWithResultsResponse, CompareResultWithResults
 from apps.results.schema.load_test_results.results import ShortLoadTestResult
 from services.postgres.models import LoadTestResultsModel, MethodResultsModel, CompareSettingsModel
+from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository
@@ -23,6 +24,7 @@ def get_method_result_compare(
 ) -> MethodResultCompare:
     return MethodResultCompare(
         method=method_result.method,
+        context=CompareSettingsContext.COMPARE_RESULT_WITH_RESULTS,
         settings=CompareSettings.model_validate(settings),
         response_time=ResponseTimeCompareMetric(
             actual=method_result.average_response_time,
@@ -75,6 +77,7 @@ def get_single_compare_result_with_results(
             in zip(method_results, compare_with_method_results)
         ],
         load_test_result_compare=LoadTestResultCompare(
+            context=CompareSettingsContext.COMPARE_RESULT_WITH_RESULTS,
             settings=CompareSettings.model_validate(settings),
             response_time=ResponseTimeCompareMetric(
                 actual=load_test_result.average_response_time,

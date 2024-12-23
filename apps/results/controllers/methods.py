@@ -55,11 +55,12 @@ async def get_method_details(
         details=MethodDetails(
             method=query.method,
             average_response_time=averages.response_time,
-            average_number_of_requests=averages.number_of_requests,
-            average_requests_per_second=averages.requests_per_second,
+            average_content_length=averages.content_length,
             average_max_response_time=averages.max_response_time,
             average_min_response_time=averages.min_response_time,
+            average_number_of_requests=averages.number_of_requests,
             average_number_of_failures=averages.number_of_failures,
-            average_failures_per_second=averages.failures_per_second
+            average_requests_per_second=averages.requests_per_second,
+            average_failures_per_second=averages.failures_per_second,
         )
     )
