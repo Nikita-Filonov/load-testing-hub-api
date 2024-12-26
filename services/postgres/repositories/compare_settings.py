@@ -8,7 +8,7 @@ from services.postgres.models import CompareSettingsModel
 from utils.clients.postgres.repository import BasePostgresRepository
 
 
-class UpdateCompareSettingsModelDict(TypedDict):
+class UpdateCompareSettingsModelDict(TypedDict, total=False):
     response_time_weight: float
     min_response_time_weight: float
     max_response_time_weight: float

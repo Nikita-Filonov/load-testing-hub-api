@@ -23,7 +23,7 @@ class LoadTestResultsAverages(NamedTuple):
     total_failures_per_second: float | None
 
 
-class UpdateLoadTestResultsModelDict(TypedDict):
+class UpdateLoadTestResultsModelDict(TypedDict, total=False):
     comment: str | None
 
 

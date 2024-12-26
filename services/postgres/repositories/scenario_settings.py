@@ -9,9 +9,16 @@ from services.postgres.models.scenario_settings import ScenarioMethodSettingsDic
 from utils.clients.postgres.repository import BasePostgresRepository
 
 
-class UpdateScenarioSettingsModelDict(TypedDict):
+class UpdateScenarioSettingsModelDict(TypedDict, total=False):
     response_time: float
+    number_of_users: float
+    min_response_time: float
+    max_response_time: float
+    number_of_requests: float
+    number_of_failures: float
     requests_per_second: float
+    failures_per_second: float
+
     methods_settings: list[ScenarioMethodSettingsDict]
 
 

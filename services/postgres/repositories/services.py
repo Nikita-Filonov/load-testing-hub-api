@@ -5,14 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.postgres.client import get_postgres_session
 from services.postgres.models import ServicesModel
-from services.postgres.models.services import ServiceStatus, ServiceType
+from services.postgres.models.services import ServiceStatus
 from utils.clients.postgres.repository import BasePostgresRepository
 
 
 class CreateServiceModelDict(TypedDict):
     url: str
     name: str
-    type: ServiceType
     cluster: str
     namespace: str
 
@@ -29,13 +28,11 @@ class ServicesRepository(BasePostgresRepository):
             )
         )
 
-    async def filter(self, types: list[ServiceType] | None = None) -> Sequence[ServicesModel]:
-        filters = (self.model.status == ServiceStatus.ACTIVE,)
-        if types:
-            filters += (self.model.type.in_(types),)
-
+    async def filter(self) -> Sequence[ServicesModel]:
         return await self.model.filter(
-            self.session, order_by=(self.model.id,), clause_filter=filters
+            self.session,
+            order_by=(self.model.id,),
+            clause_filter=(self.model.status == ServiceStatus.ACTIVE,)
         )
 
     async def create(self, data: CreateServiceModelDict) -> ServicesModel:

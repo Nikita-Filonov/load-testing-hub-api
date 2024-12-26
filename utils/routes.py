@@ -6,6 +6,7 @@ class APIRoutes(str, Enum):
     SERVICES = '/services'
     COMPARES = '/compares'
     SCENARIOS = '/scenarios'
+    INTEGRATIONS = '/integrations'
     RATIO_RESULTS = '/ratio-results'
     METHOD_RESULTS = '/method-results'
     HISTORY_RESULTS = '/history-results'
@@ -16,8 +17,6 @@ class APIRoutes(str, Enum):
     RESULTS_ANALYTICS = '/results-analytics'
     METHODS_ANALYTICS = '/methods-analytics'
     SCENARIO_SETTINGS = '/scenario-settings'
-    INTEGRATIONS_KIBANA = '/integrations-kibana'
-    INTEGRATIONS_GRAFANA = '/integrations-grafana'
 
     def as_tag(self) -> str:
         return self[1:]

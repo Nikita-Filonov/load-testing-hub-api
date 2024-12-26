@@ -10,7 +10,7 @@ from services.postgres.models.scenarios import ScenarioStatus
 from utils.clients.postgres.repository import BasePostgresRepository
 
 
-class UpdateScenariosModelDict(TypedDict):
+class UpdateScenariosModelDict(TypedDict, total=False):
     name: str
     file: str
     tags: list[str]
