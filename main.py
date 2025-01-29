@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from apps.analytics.api import analytics_app_router
 from apps.compares.api import compares_app_router
 from apps.integrations.api import integrations_app_router
+from apps.methods.api import methods_app_router
 from apps.results.api import results_app_router
 from apps.services.api import services_app_router
 from config import Settings, get_settings
@@ -18,14 +19,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000"
-    ],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(methods_app_router, prefix="/api/v1")
 app.include_router(results_app_router, prefix="/api/v1")
 app.include_router(services_app_router, prefix="/api/v1")
 app.include_router(compares_app_router, prefix="/api/v1")

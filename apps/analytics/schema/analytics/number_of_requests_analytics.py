@@ -1,14 +1,11 @@
-from datetime import datetime
+from pydantic import BaseModel
 
-from pydantic import BaseModel, Field, ConfigDict
+from utils.schema.datetime import DatetimeSchema
+from utils.schema.metrics.number_of_requests import NumberOfRequestsSchema
 
 
-class NumberOfRequestsAnalytics(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
-    datetime: datetime
-    number_of_requests: int = Field(alias="numberOfRequests")
-    number_of_failures: int = Field(alias="numberOfFailures")
+class NumberOfRequestsAnalytics(DatetimeSchema, NumberOfRequestsSchema):
+    ...
 
 
 class GetNumberOfRequestsAnalyticsResponse(BaseModel):

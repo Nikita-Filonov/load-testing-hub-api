@@ -5,16 +5,16 @@ from fastapi import Query
 from pydantic import BaseModel, Field
 
 from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestResultCompare
-from utils.schema.database_model import DatabaseModel
-from utils.schema.query_model import QueryModel
+from utils.schema.database import DatabaseSchema
+from utils.schema.query import QuerySchema
 
 
-class CompareResultWithAverages(DatabaseModel):
+class CompareResultWithAverages(DatabaseSchema):
     method_result_compares: list[MethodResultCompare] = Field(alias="methodResultCompares")
     load_test_result_compare: LoadTestResultCompare = Field(alias="loadTestResultCompare")
 
 
-class GetCompareResultWithAveragesQuery(QueryModel):
+class GetCompareResultWithAveragesQuery(QuerySchema):
     scenario_id: int | None = Field(alias="scenarioId", default=None)
     end_datetime: datetime = Field(alias="endDatetime")
     start_datetime: datetime = Field(alias="startDatetime")

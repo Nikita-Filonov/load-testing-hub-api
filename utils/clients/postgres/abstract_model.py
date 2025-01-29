@@ -79,5 +79,5 @@ class AbstractModel(Base):
             columns: Sequence[ColumnExpressionArgument],
             clause_filter: ColumnExpressionType | None = None,
             **kwargs
-    ) -> tuple[float | None, ...] | None:
+    ) -> dict[str, float | None]:
         ...

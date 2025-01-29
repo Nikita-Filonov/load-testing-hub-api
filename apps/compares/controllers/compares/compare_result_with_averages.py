@@ -1,8 +1,6 @@
 from apps.compares.schema.compare_settings import CompareSettings
 from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestResultCompare, \
-    ResponseTimeCompareMetric, NumberOfUsersCompareMetric, MinResponseTimeCompareMetric, MaxResponseTimeCompareMetric, \
-    NumberOfRequestsCompareMetric, NumberOfFailuresCompareMetric, RequestsPerSecondCompareMetric, \
-    FailuresPerSecondCompareMetric, ContentLengthCompareMetric
+    BuildBaseCompareParams, BuildMethodResultCompare
 from apps.compares.schema.compares.compare_result_with_averages import GetCompareResultWithAveragesQuery, \
     GetCompareResultWithAveragesResponse, CompareResultWithAverages
 from services.postgres.models import MethodResultsModel, CompareSettingsModel
@@ -17,41 +15,13 @@ def get_method_result_compare(
         method_result: MethodResultsModel,
         method_results_averages: MethodResultsAverages
 ) -> MethodResultCompare:
-    return MethodResultCompare(
-        method=method_result.method,
-        context=CompareSettingsContext.COMPARE_RESULT_WITH_AVERAGES,
-        settings=CompareSettings.model_validate(settings),
-        response_time=ResponseTimeCompareMetric(
-            actual=method_result.average_response_time,
-            expected=method_results_averages.response_time
-        ),
-        content_length=ContentLengthCompareMetric(
-            actual=method_result.average_content_length,
-            expected=method_results_averages.content_length
-        ),
-        min_response_time=MinResponseTimeCompareMetric(
-            actual=method_result.min_response_time,
-            expected=method_results_averages.min_response_time
-        ),
-        max_response_time=MaxResponseTimeCompareMetric(
-            actual=method_result.max_response_time,
-            expected=method_results_averages.max_response_time
-        ),
-        number_of_requests=NumberOfRequestsCompareMetric(
-            actual=method_result.number_of_requests,
-            expected=method_results_averages.number_of_requests
-        ),
-        number_of_failures=NumberOfFailuresCompareMetric(
-            actual=method_result.number_of_failures,
-            expected=method_results_averages.number_of_failures
-        ),
-        requests_per_second=RequestsPerSecondCompareMetric(
-            actual=method_result.requests_per_second,
-            expected=method_results_averages.requests_per_second
-        ),
-        failures_per_second=FailuresPerSecondCompareMetric(
-            actual=method_result.failures_per_second,
-            expected=method_results_averages.failures_per_second
+    return MethodResultCompare.build(
+        BuildMethodResultCompare(
+            method=method_result.method,
+            context=CompareSettingsContext.COMPARE_RESULT_WITH_AVERAGES,
+            settings=CompareSettings.model_validate(settings),
+            actual_instance=method_result,
+            expected_instance=method_results_averages
         ),
     )
 
@@ -91,40 +61,12 @@ async def get_compare_result_with_averages(
                 )
                 for method_result in method_results
             ],
-            load_test_result_compare=LoadTestResultCompare(
-                context=CompareSettingsContext.COMPARE_RESULT_WITH_AVERAGES,
-                settings=CompareSettings.model_validate(compare_settings),
-                response_time=ResponseTimeCompareMetric(
-                    actual=load_test_result.average_response_time,
-                    expected=load_test_result_averages.response_time
-                ),
-                number_of_users=NumberOfUsersCompareMetric(
-                    actual=load_test_result.number_of_users,
-                    expected=load_test_result_averages.number_of_users
-                ),
-                min_response_time=MinResponseTimeCompareMetric(
-                    actual=load_test_result.min_response_time,
-                    expected=load_test_result_averages.min_response_time
-                ),
-                max_response_time=MaxResponseTimeCompareMetric(
-                    actual=load_test_result.max_response_time,
-                    expected=load_test_result_averages.max_response_time
-                ),
-                number_of_requests=NumberOfRequestsCompareMetric(
-                    actual=load_test_result.total_requests,
-                    expected=load_test_result_averages.total_requests
-                ),
-                number_of_failures=NumberOfFailuresCompareMetric(
-                    actual=load_test_result.total_failures,
-                    expected=load_test_result.total_failures
-                ),
-                requests_per_second=RequestsPerSecondCompareMetric(
-                    actual=load_test_result.total_requests_per_second,
-                    expected=load_test_result_averages.total_requests_per_second
-                ),
-                failures_per_second=FailuresPerSecondCompareMetric(
-                    actual=load_test_result.total_failures_per_second,
-                    expected=load_test_result_averages.total_failures_per_second
+            load_test_result_compare=LoadTestResultCompare.build(
+                BuildBaseCompareParams(
+                    context=CompareSettingsContext.COMPARE_RESULT_WITH_AVERAGES,
+                    settings=CompareSettings.model_validate(compare_settings),
+                    actual_instance=load_test_result,
+                    expected_instance=load_test_result_averages
                 ),
             )
         )

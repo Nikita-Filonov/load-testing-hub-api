@@ -5,22 +5,33 @@ from pydantic import BaseModel, Field
 
 from apps.compares.schema.compares.compare import LoadTestResultCompare, MethodResultCompare
 from apps.results.schema.load_test_results.results import ShortLoadTestResult
-from utils.schema.database_model import DatabaseModel
-from utils.schema.query_model import QueryModel
+from utils.schema.database import DatabaseSchema
+from utils.schema.metrics.base import MetricsSchema
+from utils.schema.metrics.content_length import ContentLengthSchema
+from utils.schema.metrics.number_of_users import NumberOfUsersSchema
+from utils.schema.query import QuerySchema
 
 
-class CompareResultWithResultsAverageSummary(DatabaseModel):
+class MethodResultCompareAverageSummary(MetricsSchema, ContentLengthSchema):
+    ...
+
+
+class LoadTestCompareAveragesSummary(MetricsSchema, NumberOfUsersSchema):
+    ...
+
+
+class CompareResultWithResultsAverageSummary(DatabaseSchema):
     method_result_compares: list[MethodResultCompare] = Field(alias="methodResultCompares")
     load_test_result_compare: LoadTestResultCompare = Field(alias="loadTestResultCompare")
 
 
-class CompareResultWithResults(DatabaseModel):
+class CompareResultWithResults(DatabaseSchema):
     method_result_compares: list[MethodResultCompare] = Field(alias="methodResultCompares")
     load_test_result_compare: LoadTestResultCompare = Field(alias="loadTestResultCompare")
     compare_with_load_test_result: ShortLoadTestResult = Field(alias="compareWithLoadTestResult")
 
 
-class GetCompareResultWithResultsQuery(QueryModel):
+class GetCompareResultWithResultsQuery(QuerySchema):
     load_test_result_id: int = Field(alias="loadTestResultId")
     compare_with_load_test_results: list[int] = Field(alias="compareWithLoadTestResults")
 

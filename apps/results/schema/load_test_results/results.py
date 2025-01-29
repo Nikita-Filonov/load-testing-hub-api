@@ -2,19 +2,25 @@ from datetime import datetime
 from typing import Self
 
 from fastapi import Query
-from pydantic import BaseModel, Field, field_validator, computed_field
+from pydantic import BaseModel, Field, computed_field
 
 from apps.results.schema.load_test_results.compares import LoadTestResultSummaryCompare
 from apps.services.schema.scenarios import Scenario
-from apps.services.schema.services import Service
-from utils.schema.database_model import DatabaseModel
-from utils.schema.paginration_model import PaginationResponse
-from utils.schema.query_model import PaginationQuery, QueryModel
+from apps.services.schema.services import ShortService
+from utils.schema.database import DatabaseSchema
+from utils.schema.metrics.base import MetricsSchema
+from utils.schema.metrics.number_of_requests import NumberOfRequestsSchema
+from utils.schema.metrics.number_of_users import NumberOfUsersSchema
+from utils.schema.metrics.percentiles import PercentilesSchema
+from utils.schema.metrics.requests_per_second import RequestsPerSecondSchema
+from utils.schema.metrics.response_times import ResponseTimesSchema
+from utils.schema.pagination import PaginationResponse
+from utils.schema.query import PaginationQuery, QuerySchema
 
 
-class ShortLoadTestResult(DatabaseModel):
+class ShortLoadTestResult(DatabaseSchema):
     id: int
-    service: Service
+    service: ShortService
     scenario: Scenario
     trigger_ci_job_url: str | None = Field(alias="triggerCIJobUrl")
     trigger_ci_pipeline_url: str | None = Field(alias="triggerCIPipelineUrl")
@@ -23,14 +29,15 @@ class ShortLoadTestResult(DatabaseModel):
     load_tests_ci_pipeline_url: str | None = Field(alias="loadTestsCIPipelineUrl")
 
 
-class LoadTestResult(ShortLoadTestResult):
+class LoadTestResult(
+    ShortLoadTestResult,
+    NumberOfUsersSchema,
+    NumberOfRequestsSchema,
+    RequestsPerSecondSchema,
+):
     comment: str | None = Field(default=None, max_length=250)
     started_at: datetime = Field(alias="startedAt")
     finished_at: datetime = Field(alias="finishedAt")
-    total_requests: int = Field(alias="totalRequests")
-    total_failures: int = Field(alias="totalFailures")
-    number_of_users: int = Field(alias="numberOfUsers")
-    total_requests_per_second: float = Field(alias="totalRequestsPerSecond")
 
     compare: LoadTestResultSummaryCompare | None = None
 
@@ -38,32 +45,9 @@ class LoadTestResult(ShortLoadTestResult):
     def duration(self) -> float:
         return (self.finished_at - self.started_at).total_seconds()
 
-    @field_validator('total_requests_per_second')
-    def validate_total_requests_per_second(cls, total_requests_per_second: float) -> float:
-        return round(total_requests_per_second, 2)
 
-
-class LoadTestResultDetails(LoadTestResult):
-    max_response_time: float = Field(alias="maxResponseTime")
-    min_response_time: float = Field(alias="minResponseTime")
-    average_response_time: float = Field(alias="averageResponseTime")
-    total_failures_per_second: float = Field(alias="totalFailuresPerSecond")
-
-    @field_validator('max_response_time')
-    def validate_max_response_time(cls, max_response_time: float) -> float:
-        return round(max_response_time, 2)
-
-    @field_validator('min_response_time')
-    def validate_min_response_time(cls, min_response_time: float) -> float:
-        return round(min_response_time, 2)
-
-    @field_validator('average_response_time')
-    def validate_average_response_time(cls, average_response_time: float) -> float:
-        return round(average_response_time, 2)
-
-    @field_validator('total_failures_per_second')
-    def validate_total_failures_per_second(cls, total_failures_per_second: float) -> float:
-        return round(total_failures_per_second, 2)
+class LoadTestResultDetails(LoadTestResult, PercentilesSchema, ResponseTimesSchema):
+    ...
 
 
 class GetLoadTestResultsQuery(PaginationQuery):
@@ -101,7 +85,7 @@ class GetLoadTestResultsResponse(PaginationResponse[LoadTestResult]):
     ...
 
 
-class GetLoadTestResultDetailsQuery(QueryModel):
+class GetLoadTestResultDetailsQuery(QuerySchema):
     scenario_id: int | None = Field(alias="scenarioId", default=None)
 
     @classmethod
@@ -116,24 +100,16 @@ class GetLoadTestResultDetailsResponse(BaseModel):
     details: LoadTestResultDetails
 
 
-class CreateLoadTestResultRequest(BaseModel):
+class CreateLoadTestResultRequest(MetricsSchema, NumberOfUsersSchema):
     service_id: int = Field(alias="serviceId")
     started_at: datetime = Field(alias="startedAt")
     finished_at: datetime = Field(alias="finishedAt")
     scenario_id: int = Field(alias="scenarioId")
-    total_requests: int = Field(alias="totalRequests")
-    number_of_users: int = Field(alias="numberOfUsers")
     trigger_ci_job_url: str | None = Field(alias="triggerCIJobUrl")
     trigger_ci_pipeline_url: str | None = Field(alias="triggerCIPipelineUrl")
     trigger_ci_project_version: str | None = Field(alias="triggerCIProjectVersion")
     load_tests_ci_job_url: str | None = Field(alias="loadTestsCIJobUrl")
     load_tests_ci_pipeline_url: str | None = Field(alias="loadTestsCIPipelineUrl")
-    total_requests_per_second: float = Field(alias="totalRequestsPerSecond")
-    total_failures: int = Field(alias="totalFailures")
-    total_failures_per_second: float = Field(alias="totalFailuresPerSecond")
-    average_response_time: float = Field(alias="averageResponseTime")
-    max_response_time: float = Field(alias="maxResponseTime")
-    min_response_time: float = Field(alias="minResponseTime")
 
 
 class UpdateLoadTestResultQuery(GetLoadTestResultDetailsQuery):

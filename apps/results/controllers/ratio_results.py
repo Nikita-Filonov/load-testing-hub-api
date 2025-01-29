@@ -1,4 +1,4 @@
-from apps.results.schema.ratio_results import GetRatioResultResponse, RootRatioResult, CreateRatioResultRequest
+from apps.results.schema.ratio_results import GetRatioResultResponse, RatioResultList, CreateRatioResultRequest
 from services.postgres.repositories.ratio_results import RatioResultsRepository
 
 
@@ -11,8 +11,8 @@ async def get_ratio_result(
         return GetRatioResultResponse()
 
     return GetRatioResultResponse(
-        ratio_total=RootRatioResult.model_validate(results.ratio_total),
-        ratio_per_class=RootRatioResult.model_validate(results.ratio_per_class),
+        ratio_total=RatioResultList.model_validate(results.ratio_total),
+        ratio_per_class=RatioResultList.model_validate(results.ratio_per_class),
     )
 
 

@@ -1,3 +1,4 @@
+from itertools import zip_longest
 from typing import Self, Sequence
 
 from sqlalchemy import select, func, ColumnExpressionArgument
@@ -73,7 +74,7 @@ class FilterModel(AbstractModel):
             columns: Sequence[ColumnExpressionArgument],
             clause_filter: ColumnExpressionType | None = None,
             **kwargs
-    ) -> tuple[float | None, ...] | None:
+    ) -> dict[str, float | None]:
         expressions = [func.avg(column).label(column.key) for column in columns]
 
         query = select(*expressions).filter_by(**kwargs)
@@ -81,4 +82,7 @@ class FilterModel(AbstractModel):
 
         result = await session.execute(query)
 
-        return result.one_or_none()
+        return {
+            column.key: value
+            for column, value in zip_longest(columns, result.one_or_none() or ())
+        }

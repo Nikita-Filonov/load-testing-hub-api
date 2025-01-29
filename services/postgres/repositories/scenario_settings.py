@@ -1,25 +1,11 @@
-from typing import Annotated, TypedDict
+from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.postgres.client import get_postgres_session
 from services.postgres.models import ScenarioSettingsModel
-from services.postgres.models.scenario_settings import ScenarioMethodSettingsDict
 from utils.clients.postgres.repository import BasePostgresRepository
-
-
-class UpdateScenarioSettingsModelDict(TypedDict, total=False):
-    response_time: float
-    number_of_users: float
-    min_response_time: float
-    max_response_time: float
-    number_of_requests: float
-    number_of_failures: float
-    requests_per_second: float
-    failures_per_second: float
-
-    methods_settings: list[ScenarioMethodSettingsDict]
 
 
 class ScenarioSettingsRepository(BasePostgresRepository):
@@ -38,11 +24,7 @@ class ScenarioSettingsRepository(BasePostgresRepository):
 
         return settings
 
-    async def update(
-            self,
-            scenario_id: int,
-            data: UpdateScenarioSettingsModelDict
-    ) -> ScenarioSettingsModel:
+    async def update(self, scenario_id: int, data: dict) -> ScenarioSettingsModel:
         return await self.model.update(
             self.session, clause_filter=(self.model.scenario_id == scenario_id,), **data
         )

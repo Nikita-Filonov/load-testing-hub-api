@@ -1,27 +1,33 @@
-from apps.analytics.schema.analytics.number_of_requests_analytics import GetNumberOfRequestsAnalyticsResponse, \
-    NumberOfRequestsAnalytics
-from apps.analytics.schema.analytics.requests_per_second_analytics import GetRequestsPerSecondAnalyticsResponse, \
-    RequestsPerSecondAnalytics
-from apps.analytics.schema.analytics.response_times_analytics import GetResponseTimesAnalyticsResponse, \
-    ResponseTimesAnalytics
-from apps.analytics.schema.methods_analytics import GetMethodsAnalyticsQuery
+from apps.analytics.schema.methods_analytics import GetMethodsAnalyticsQuery, \
+    GetMethodsRequestsPerSecondAnalyticsResponse, MethodsRequestsPerSecondAnalytics, \
+    GetMethodsNumberOfRequestsAnalyticsResponse, MethodsNumberOfRequestsAnalytics, \
+    GetMethodsResponseTimesAnalyticsResponse, MethodsResponseTimesAnalytics
 from services.postgres.repositories.method_results import MethodResultsRepository
 
 
 async def get_methods_number_of_requests_analytics(
         query: GetMethodsAnalyticsQuery,
         method_results_repository: MethodResultsRepository
-) -> GetNumberOfRequestsAnalyticsResponse:
-    results = await method_results_repository.filter(**query.model_dump())
+) -> GetMethodsNumberOfRequestsAnalyticsResponse:
+    results = await method_results_repository.filter_with_distinct_by_method(
+        service_id=query.service_id, scenario_id=query.scenario_id
+    )
+    averages = await method_results_repository.get_averages_for_methods(
+        methods=[result.method for result in results],
+        service_id=query.service_id,
+        scenario_id=query.scenario_id,
+        end_datetime=query.end_datetime,
+        start_datetime=query.start_datetime
+    )
 
-    return GetNumberOfRequestsAnalyticsResponse(
+    return GetMethodsNumberOfRequestsAnalyticsResponse(
         analytics=[
-            NumberOfRequestsAnalytics(
-                datetime=result.created_at,
-                number_of_requests=result.number_of_requests,
-                number_of_failures=result.number_of_failures
+            MethodsNumberOfRequestsAnalytics(
+                method=method,
+                number_of_requests=average.number_of_requests,
+                number_of_failures=average.number_of_failures
             )
-            for result in results
+            for method, average in averages.items()
         ]
     )
 
@@ -29,17 +35,26 @@ async def get_methods_number_of_requests_analytics(
 async def get_methods_requests_per_second_analytics(
         query: GetMethodsAnalyticsQuery,
         method_results_repository: MethodResultsRepository
-) -> GetRequestsPerSecondAnalyticsResponse:
-    results = await method_results_repository.filter(**query.model_dump())
+) -> GetMethodsRequestsPerSecondAnalyticsResponse:
+    results = await method_results_repository.filter_with_distinct_by_method(
+        service_id=query.service_id, scenario_id=query.scenario_id
+    )
+    averages = await method_results_repository.get_averages_for_methods(
+        methods=[result.method for result in results],
+        service_id=query.service_id,
+        scenario_id=query.scenario_id,
+        end_datetime=query.end_datetime,
+        start_datetime=query.start_datetime
+    )
 
-    return GetRequestsPerSecondAnalyticsResponse(
+    return GetMethodsRequestsPerSecondAnalyticsResponse(
         analytics=[
-            RequestsPerSecondAnalytics(
-                datetime=result.created_at,
-                requests_per_second=result.requests_per_second,
-                failures_per_second=result.failures_per_second
+            MethodsRequestsPerSecondAnalytics(
+                method=method,
+                requests_per_second=average.requests_per_second,
+                failures_per_second=average.failures_per_second,
             )
-            for result in results
+            for method, average in averages.items()
         ]
     )
 
@@ -47,17 +62,27 @@ async def get_methods_requests_per_second_analytics(
 async def get_methods_response_times_analytics(
         query: GetMethodsAnalyticsQuery,
         method_results_repository: MethodResultsRepository
-) -> GetResponseTimesAnalyticsResponse:
-    results = await method_results_repository.filter(**query.model_dump())
+) -> GetMethodsResponseTimesAnalyticsResponse:
+    results = await method_results_repository.filter_with_distinct_by_method(
+        service_id=query.service_id, scenario_id=query.scenario_id
+    )
+    averages = await method_results_repository.get_averages_for_methods(
+        methods=[result.method for result in results],
+        service_id=query.service_id,
+        scenario_id=query.scenario_id,
+        end_datetime=query.end_datetime,
+        start_datetime=query.start_datetime
+    )
 
-    return GetResponseTimesAnalyticsResponse(
+    return GetMethodsResponseTimesAnalyticsResponse(
         analytics=[
-            ResponseTimesAnalytics(
-                datetime=result.created_at,
-                max_response_time=result.max_response_time,
-                min_response_time=result.min_response_time,
-                average_response_time=result.average_response_time
+            MethodsResponseTimesAnalytics(
+                method=method,
+                max_response_time=average.max_response_time,
+                min_response_time=average.min_response_time,
+                median_response_time=average.median_response_time,
+                average_response_time=average.average_response_time
             )
-            for result in results
+            for method, average in averages.items()
         ]
     )

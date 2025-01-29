@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from config import DatabaseClientConfig
-from utils.common.cache import async_cache
+from utils.base.cache import async_cache
 
 
 @async_cache(60 * 30)

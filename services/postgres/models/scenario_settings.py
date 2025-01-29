@@ -1,50 +1,46 @@
-from typing import TypedDict
-
-from sqlalchemy import Column, Float, ForeignKey, JSON, Integer
+from sqlalchemy import Column, ForeignKey, JSON, Integer
 from sqlalchemy.orm import Mapped
 
+from services.postgres.models.base.content_length import get_default_content_length_model_dict, \
+    ContentLengthModelDict
+from services.postgres.models.base.metrics import MetricsModelDict, get_default_metrics_model_dict
+from services.postgres.models.base.number_of_users import NumberOfUsersModelDict, \
+    get_default_number_of_users_model_dict
+from utils.base.array import find
 from utils.clients.postgres.mixin_model import MixinModel
-from utils.common.array import find
 
 
-class ScenarioMethodSettingsDict(TypedDict):
+class ScenarioResultSettingsDict(MetricsModelDict, NumberOfUsersModelDict):
+    pass
+
+
+def get_default_scenario_result_settings_dict() -> ScenarioResultSettingsDict:
+    return ScenarioResultSettingsDict(
+        **get_default_metrics_model_dict(),
+        **get_default_number_of_users_model_dict()
+    )
+
+
+class ScenarioMethodSettingsDict(MetricsModelDict, ContentLengthModelDict):
     method: str
-    response_time: float
-    content_length: float
-    min_response_time: float
-    max_response_time: float
-    number_of_requests: float
-    number_of_failures: float
-    requests_per_second: float
-    failures_per_second: float
 
 
 def get_default_scenario_method_settings_dict() -> ScenarioMethodSettingsDict:
     return ScenarioMethodSettingsDict(
         method="",
-        response_time=0.0,
-        content_length=0.0,
-        min_response_time=0.0,
-        max_response_time=0.0,
-        number_of_requests=0.0,
-        number_of_failures=0.0,
-        requests_per_second=0.0,
-        failures_per_second=0.0
+        **get_default_metrics_model_dict(),
+        **get_default_content_length_model_dict(),
     )
 
 
 class ScenarioSettingsModel(MixinModel):
     __tablename__ = "scenario_settings"
 
-    response_time: Mapped[float] = Column(Float, nullable=False, default=0.0)
-    number_of_users: Mapped[float] = Column(Float, nullable=False, default=0.0)
-    min_response_time: Mapped[float] = Column(Float, nullable=False, default=0.0)
-    max_response_time: Mapped[float] = Column(Float, nullable=False, default=0.0)
-    number_of_requests: Mapped[float] = Column(Float, nullable=False, default=0.0)
-    number_of_failures: Mapped[float] = Column(Float, nullable=False, default=0.0)
-    requests_per_second: Mapped[float] = Column(Float, nullable=False, default=0.0)
-    failures_per_second: Mapped[float] = Column(Float, nullable=False, default=0.0)
-
+    result_settings: Mapped[ScenarioResultSettingsDict] = Column(
+        JSON,
+        default=get_default_scenario_result_settings_dict(),
+        nullable=False,
+    )
     methods_settings: Mapped[list[ScenarioMethodSettingsDict]] = Column(
         JSON, nullable=False, default=[]
     )

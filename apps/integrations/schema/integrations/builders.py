@@ -1,18 +1,16 @@
 from pydantic import Field, HttpUrl
 
-from utils.schema.database_model import DatabaseModel
-from utils.schema.query_model import QueryModel
+from services.postgres.models.integrations import IntegrationSystemType
+from utils.schema.database import DatabaseSchema
+from utils.schema.query import QuerySchema
 
 
-class BuildIntegrationURLRequest(QueryModel):
+class BuildIntegrationURLRequest(QuerySchema):
     service_id: int = Field(alias="serviceId")
+    system_type: IntegrationSystemType = Field(alias="systemType")
     integration_id: int = Field(alias="integrationId")
     load_test_result_id: int = Field(alias="loadTestResultId")
 
 
-class BuildKibanaDiscoverURLResponse(DatabaseModel):
-    discover_url: HttpUrl = Field(alias="discoverUrl")
-
-
-class BuildGrafanaDashboardURLResponse(DatabaseModel):
-    dashboard_url: HttpUrl = Field(alias="dashboardUrl")
+class BuildIntegrationURLResponse(DatabaseSchema):
+    integration_url: HttpUrl = Field(alias="integrationUrl")

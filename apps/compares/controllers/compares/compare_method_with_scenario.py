@@ -1,10 +1,8 @@
 from apps.compares.schema.compare_settings import CompareSettings
-from apps.compares.schema.compares.compare import MethodResultCompare, ResponseTimeCompareMetric, \
-    ContentLengthCompareMetric, MinResponseTimeCompareMetric, MaxResponseTimeCompareMetric, \
-    NumberOfRequestsCompareMetric, NumberOfFailuresCompareMetric, RequestsPerSecondCompareMetric, \
-    FailuresPerSecondCompareMetric
+from apps.compares.schema.compares.compare import MethodResultCompare, BuildMethodResultCompare
 from apps.compares.schema.compares.compare_method_with_scenario import GetCompareMethodWithScenarioQuery, \
     GetCompareMethodWithScenarioResponse
+from apps.services.schema.scenario_settings import ScenarioMethodSettings
 from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository
@@ -30,41 +28,13 @@ async def get_compare_method_with_scenario(
     method_settings = scenario_settings.get_method_settings_or_default(query.method)
 
     return GetCompareMethodWithScenarioResponse(
-        compare=MethodResultCompare(
-            method=query.method,
-            context=CompareSettingsContext.COMPARE_METHOD_WITH_SCENARIO,
-            settings=CompareSettings.model_validate(compare_settings),
-            response_time=ResponseTimeCompareMetric(
-                actual=method_result_averages.response_time,
-                expected=method_settings.get('response_time', 0.0)
-            ),
-            content_length=ContentLengthCompareMetric(
-                actual=method_result_averages.content_length,
-                expected=method_settings.get('content_length', 0.0)
-            ),
-            min_response_time=MinResponseTimeCompareMetric(
-                actual=method_result_averages.min_response_time,
-                expected=method_settings.get('min_response_time', 0.0)
-            ),
-            max_response_time=MaxResponseTimeCompareMetric(
-                actual=method_result_averages.max_response_time,
-                expected=method_settings.get('max_response_time', 0.0)
-            ),
-            number_of_requests=NumberOfRequestsCompareMetric(
-                actual=method_result_averages.number_of_requests,
-                expected=method_settings.get('number_of_requests', 0.0)
-            ),
-            number_of_failures=NumberOfFailuresCompareMetric(
-                actual=method_result_averages.number_of_failures,
-                expected=method_settings.get('number_of_failures', 0.0)
-            ),
-            requests_per_second=RequestsPerSecondCompareMetric(
-                actual=method_result_averages.requests_per_second,
-                expected=method_settings.get('requests_per_second', 0.0)
-            ),
-            failures_per_second=FailuresPerSecondCompareMetric(
-                actual=method_result_averages.failures_per_second,
-                expected=method_settings.get('failures_per_second', 0.0)
+        compare=MethodResultCompare.build(
+            BuildMethodResultCompare(
+                method=query.method,
+                context=CompareSettingsContext.COMPARE_METHOD_WITH_SCENARIO,
+                settings=CompareSettings.model_validate(compare_settings),
+                actual_instance=method_result_averages,
+                expected_instance=ScenarioMethodSettings.model_validate(method_settings)
             ),
         )
     )

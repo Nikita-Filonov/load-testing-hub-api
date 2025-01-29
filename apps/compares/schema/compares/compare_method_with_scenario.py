@@ -5,7 +5,7 @@ from fastapi import Query
 from pydantic import BaseModel, Field
 
 from apps.compares.schema.compares.compare import MethodResultCompare
-from apps.results.schema.methods import GetMethodDetailsQuery
+from apps.methods.schema.methods.schema import GetMethodDetailsQuery
 
 
 class GetCompareMethodWithScenarioQuery(GetMethodDetailsQuery):

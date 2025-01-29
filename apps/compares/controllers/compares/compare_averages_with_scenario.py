@@ -1,10 +1,8 @@
 from apps.compares.schema.compare_settings import CompareSettings
-from apps.compares.schema.compares.compare import LoadTestResultCompare, ResponseTimeCompareMetric, \
-    MinResponseTimeCompareMetric, MaxResponseTimeCompareMetric, NumberOfUsersCompareMetric, \
-    NumberOfRequestsCompareMetric, NumberOfFailuresCompareMetric, RequestsPerSecondCompareMetric, \
-    FailuresPerSecondCompareMetric
+from apps.compares.schema.compares.compare import LoadTestResultCompare, BuildBaseCompareParams
 from apps.compares.schema.compares.compare_averages_with_scenario import GetCompareAveragesWithScenarioQuery, \
     GetCompareAveragesWithScenarioResponse
+from apps.services.schema.scenario_settings import ScenarioResultSettings
 from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
@@ -28,40 +26,12 @@ async def get_compare_averages_with_scenario(
     scenario_settings = await scenario_settings_repository.get_or_create(query.scenario_id)
 
     return GetCompareAveragesWithScenarioResponse(
-        compare=LoadTestResultCompare(
-            context=CompareSettingsContext.COMPARE_AVERAGES_WITH_SCENARIO,
-            settings=CompareSettings.model_validate(compare_settings),
-            response_time=ResponseTimeCompareMetric(
-                actual=load_test_result_averages.response_time,
-                expected=scenario_settings.response_time
-            ),
-            number_of_users=NumberOfUsersCompareMetric(
-                actual=load_test_result_averages.number_of_users,
-                expected=scenario_settings.number_of_users
-            ),
-            min_response_time=MinResponseTimeCompareMetric(
-                actual=load_test_result_averages.min_response_time,
-                expected=scenario_settings.min_response_time
-            ),
-            max_response_time=MaxResponseTimeCompareMetric(
-                actual=load_test_result_averages.max_response_time,
-                expected=scenario_settings.max_response_time
-            ),
-            number_of_requests=NumberOfRequestsCompareMetric(
-                actual=load_test_result_averages.total_requests,
-                expected=scenario_settings.number_of_requests
-            ),
-            number_of_failures=NumberOfFailuresCompareMetric(
-                actual=load_test_result_averages.total_failures,
-                expected=scenario_settings.number_of_failures
-            ),
-            requests_per_second=RequestsPerSecondCompareMetric(
-                actual=load_test_result_averages.total_requests_per_second,
-                expected=scenario_settings.requests_per_second
-            ),
-            failures_per_second=FailuresPerSecondCompareMetric(
-                actual=load_test_result_averages.total_failures_per_second,
-                expected=scenario_settings.failures_per_second
+        compare=LoadTestResultCompare.build(
+            BuildBaseCompareParams(
+                context=CompareSettingsContext.COMPARE_AVERAGES_WITH_SCENARIO,
+                settings=CompareSettings.model_validate(compare_settings),
+                actual_instance=load_test_result_averages,
+                expected_instance=ScenarioResultSettings.model_validate(scenario_settings.result_settings)
             ),
         )
     )

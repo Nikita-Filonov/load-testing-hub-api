@@ -4,9 +4,9 @@ from typing import Self
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from apps.results.schema.ratio_results import RootRatioResult
-from utils.schema.database_model import DatabaseModel
-from utils.schema.query_model import QueryModel
+from apps.results.schema.ratio_results import RatioResultList
+from utils.schema.database import DatabaseSchema
+from utils.schema.query import QuerySchema
 
 
 class ScenarioTag(str, Enum):
@@ -15,7 +15,7 @@ class ScenarioTag(str, Enum):
     EXPERIMENT = 'EXPERIMENT'
 
 
-class Scenario(DatabaseModel):
+class Scenario(DatabaseSchema):
     id: int
     name: str
     tags: list[ScenarioTag]
@@ -24,11 +24,13 @@ class Scenario(DatabaseModel):
 
 class ScenarioDetails(Scenario):
     file: str
-    ratio_total: RootRatioResult = Field(alias="ratioTotal")
-    ratio_per_class: RootRatioResult = Field(alias="ratioPerClass")
+    ratio_total: RatioResultList = Field(alias="ratioTotal")
+    ratio_per_class: RatioResultList = Field(alias="ratioPerClass")
+    number_of_users: int = Field(alias="numberOfUsers")
+    runtime_duration: str = Field(alias="runtimeDuration")
 
 
-class GetScenariosQuery(QueryModel):
+class GetScenariosQuery(QuerySchema):
     service_id: int = Field(alias="serviceId")
 
     @classmethod
@@ -45,22 +47,28 @@ class GetScenarioResponse(BaseModel):
 
 
 class UpdateScenarioRequest(BaseModel):
-    name: str | None = None
-    file: str | None = None
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    file: str | None = Field(default=None, min_length=1, max_length=250)
     tags: list[ScenarioTag] | None = None
-    version: str | None = None
-    ratio_total: RootRatioResult | None = Field(alias="ratioTotal", default=None)
-    ratio_per_class: RootRatioResult | None = Field(alias="ratioPerClass", default=None)
+    version: str | None = Field(default=None, min_length=1, max_length=50)
+    ratio_total: RatioResultList | None = Field(alias="ratioTotal", default=None)
+    ratio_per_class: RatioResultList | None = Field(alias="ratioPerClass", default=None)
+    number_of_users: int | None = Field(alias="numberOfUsers", default=None)
+    runtime_duration: str | None = Field(
+        alias="runtimeDuration", default=None, min_length=1, max_length=50
+    )
 
 
 class CreateScenarioRequest(BaseModel):
-    name: str
-    file: str
+    name: str = Field(min_length=1, max_length=100)
+    file: str = Field(min_length=1, max_length=250)
     tags: list[ScenarioTag]
-    version: str
+    version: str = Field(min_length=1, max_length=50)
     service_id: int = Field(alias="serviceId")
-    ratio_total: RootRatioResult = Field(alias="ratioTotal", default=[])
-    ratio_per_class: RootRatioResult = Field(alias="ratioPerClass", default=[])
+    ratio_total: RatioResultList = Field(alias="ratioTotal", default=[])
+    ratio_per_class: RatioResultList = Field(alias="ratioPerClass", default=[])
+    number_of_users: int = Field(alias="numberOfUsers")
+    runtime_duration: str = Field(alias="runtimeDuration", min_length=1, max_length=50)
 
 
 class GetScenarioDetailsResponse(BaseModel):

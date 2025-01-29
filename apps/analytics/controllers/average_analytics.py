@@ -11,13 +11,22 @@ async def get_average_analytics(
 
     return GetAverageAnalyticsResponse(
         analytics=AverageAnalytics(
-            total_requests=averages.total_requests,
-            total_failures=averages.total_failures,
             number_of_users=averages.number_of_users,
             max_response_time=averages.max_response_time,
             min_response_time=averages.min_response_time,
-            average_response_time=averages.response_time,
-            total_requests_per_second=averages.total_requests_per_second,
-            total_failures_per_second=averages.total_failures_per_second
+            number_of_requests=averages.number_of_requests,
+            number_of_failures=averages.number_of_failures,
+            requests_per_second=averages.requests_per_second,
+            failures_per_second=averages.failures_per_second,
+            median_response_time=averages.median_response_time,
+            average_response_time=averages.average_response_time,
+            response_time_percentile_50=averages.response_time_percentile_50,
+            response_time_percentile_60=averages.response_time_percentile_60,
+            response_time_percentile_70=averages.response_time_percentile_70,
+            response_time_percentile_80=averages.response_time_percentile_80,
+            response_time_percentile_90=averages.response_time_percentile_90,
+            response_time_percentile_95=averages.response_time_percentile_95,
+            response_time_percentile_99=averages.response_time_percentile_99,
+            response_time_percentile_100=averages.response_time_percentile_100,
         )
     )

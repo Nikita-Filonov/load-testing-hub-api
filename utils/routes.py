@@ -9,7 +9,6 @@ class APIRoutes(str, Enum):
     INTEGRATIONS = '/integrations'
     RATIO_RESULTS = '/ratio-results'
     METHOD_RESULTS = '/method-results'
-    HISTORY_RESULTS = '/history-results'
     COMPARE_SETTINGS = '/compare-settings'
     EXCEPTION_RESULTS = '/exception-results'
     LOAD_TEST_RESULTS = '/load-test-results'
@@ -17,6 +16,8 @@ class APIRoutes(str, Enum):
     RESULTS_ANALYTICS = '/results-analytics'
     METHODS_ANALYTICS = '/methods-analytics'
     SCENARIO_SETTINGS = '/scenario-settings'
+    METHOD_RESULTS_HISTORY = '/method-results-history'
+    LOAD_TEST_RESULTS_HISTORY = '/load-test-results-history'
 
     def as_tag(self) -> str:
         return self[1:]

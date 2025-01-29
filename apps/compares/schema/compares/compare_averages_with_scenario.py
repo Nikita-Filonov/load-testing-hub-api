@@ -4,20 +4,23 @@ from typing import Self
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from apps.analytics.schema.results_analytics import GetResultsAnalyticsQuery
 from apps.compares.schema.compares.compare import LoadTestResultCompare
+from utils.schema.query import QuerySchema
 
 
-class GetCompareAveragesWithScenarioQuery(GetResultsAnalyticsQuery):
+class GetCompareAveragesWithScenarioQuery(QuerySchema):
+    service_id: int = Field(alias="serviceId")
     scenario_id: int = Field(alias="scenarioId")
+    end_datetime: datetime = Field(alias="endDatetime")
+    start_datetime: datetime = Field(alias="startDatetime")
 
     @classmethod
     async def as_query(
             cls,
             service_id: int = Query(alias="serviceId"),
             scenario_id: int = Query(alias="scenarioId"),
+            end_datetime: datetime = Query(alias="endDatetime"),
             start_datetime: datetime = Query(alias="startDatetime"),
-            end_datetime: datetime = Query(alias="endDatetime")
     ) -> Self:
         return GetCompareAveragesWithScenarioQuery(
             service_id=service_id,

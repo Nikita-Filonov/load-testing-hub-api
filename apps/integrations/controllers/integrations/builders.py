@@ -1,49 +1,52 @@
-from apps.integrations.schema.integrations.builders import BuildIntegrationURLRequest, BuildKibanaDiscoverURLResponse, \
-    BuildGrafanaDashboardURLResponse
-from config import Settings
+from pydantic import HttpUrl
 
+from apps.integrations.schema.integrations.builders import BuildIntegrationURLRequest, BuildIntegrationURLResponse
+from config import Settings
+from services.postgres.models import IntegrationsModel, LoadTestResultsModel
+from services.postgres.models.integrations import IntegrationSystemType
 from services.postgres.repositories.integrations import IntegrationsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
-from utils.integrations.grafana import GrafanaDashboardURLBuilder
-from utils.integrations.kibana import KibanaDiscoverURLBuilder
 
 
-async def build_kibana_discover_url(
+def get_kibana_integration_url(
+        settings: Settings,
+        integration: IntegrationsModel,
+        load_test_result: LoadTestResultsModel,
+):
+    return integration.get_ready_url(
+        host=settings.kibana_url.host,
+        to_time=str(load_test_result.finished_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'),
+        from_time=str(load_test_result.started_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'),
+    )
+
+
+def get_grafana_integration_url(
+        settings: Settings,
+        integration: IntegrationsModel,
+        load_test_result: LoadTestResultsModel,
+):
+    return integration.get_ready_url(
+        host=settings.grafana_url.host,
+        to_time=str(int(load_test_result.finished_at.timestamp()) * 1000),
+        from_time=str(int(load_test_result.started_at.timestamp()) * 1000),
+    )
+
+
+async def build_integration_url(
         request: BuildIntegrationURLRequest,
-        setting: Settings,
+        settings: Settings,
         integrations_repository: IntegrationsRepository,
         load_test_results_repository: LoadTestResultsRepository,
-) -> BuildKibanaDiscoverURLResponse:
-    result = await load_test_results_repository.get_by_id(request.load_test_result_id)
+) -> BuildIntegrationURLResponse:
     integration = await integrations_repository.get_by_id(request.integration_id)
+    load_test_result = await load_test_results_repository.get_by_id(request.load_test_result_id)
 
-    builder = KibanaDiscoverURLBuilder(
-        to_time=str(result.finished_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'),
-        from_time=str(result.started_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'),
-        namespace=integration.namespace,
-    )
+    match request.system_type:
+        case IntegrationSystemType.KIBANA:
+            integration_url = get_kibana_integration_url(settings, integration, load_test_result)
+        case IntegrationSystemType.GRAFANA:
+            integration_url = get_grafana_integration_url(settings, integration, load_test_result)
+        case _:
+            raise ValueError(f"Unsupported integration system type: {integration.system_type}")
 
-    return BuildKibanaDiscoverURLResponse(
-        discover_url=builder.build_url(setting.kibana_url)
-    )
-
-
-async def build_grafana_dashboard_url(
-        request: BuildIntegrationURLRequest,
-        setting: Settings,
-        integrations_repository: IntegrationsRepository,
-        load_test_results_repository: LoadTestResultsRepository,
-) -> BuildGrafanaDashboardURLResponse:
-    result = await load_test_results_repository.get_by_id(request.load_test_result_id)
-    integration = await integrations_repository.get_by_id(request.integration_id)
-
-    builder = GrafanaDashboardURLBuilder(
-        to_time=str(int(result.finished_at.timestamp()) * 1000),
-        from_time=str(int(result.started_at.timestamp()) * 1000),
-        var_cluster=integration.cluster,
-        var_namespace=integration.namespace,
-    )
-
-    return BuildGrafanaDashboardURLResponse(
-        dashboard_url=builder.build_url(setting.grafana_url)
-    )
+    return BuildIntegrationURLResponse(integration_url=HttpUrl(integration_url))

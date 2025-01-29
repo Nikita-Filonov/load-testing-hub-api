@@ -1,7 +1,6 @@
 from apps.results.schema.exception_results import CreateExceptionResultsRequest, GetExceptionResultsQuery, \
     GetExceptionResultsResponse, ExceptionResult, GetExceptionResultDetailsResponse, ExceptionResultDetails
-from services.postgres.repositories.exception_results import ExceptionResultsRepository, \
-    CreateExceptionResultsModelDict
+from services.postgres.repositories.exception_results import ExceptionResultsRepository, CreateExceptionResultsModelDict
 
 
 async def get_exception_results(

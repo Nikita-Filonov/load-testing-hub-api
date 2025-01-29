@@ -1,97 +1,35 @@
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from dataclasses import dataclass
+from typing import Self
+
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from apps.compares.schema.compare_settings import CompareSettings
+from apps.compares.schema.compares.compare_explanation import CompareExplanationSummary, CompareExplanation
+from apps.compares.schema.compares.compare_metric import CompareMetric, MAP_METRIC_KEY_TO_COMPARE_PERCENT_DIRECTION
+from services.postgres.models.base.metrics import MetricsModel, MetricsModelAverages
 from services.postgres.models.compare_settings import CompareSettingsContext
-from utils.common.compare import get_compare_percent, get_compare_percent_with_weight, ComparePercentWithWeight, \
-    ComparePercentDirection
+from utils.base.compare import get_compare_percent_with_weight, ComparePercentWithWeight
+from utils.schema.metrics.base import MetricKey, MetricsSchema, MetricName
 
 
-class CompareMetric(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+@dataclass
+class GetCompareMetricsParams:
+    actual_instance: MetricsModel | MetricsModelAverages | MetricsSchema | None
+    expected_instance: MetricsModel | MetricsModelAverages | MetricsSchema | None
 
-    actual: float
-    expected: float
-    direction: ComparePercentDirection = Field(exclude=True)
-
-    @computed_field(alias="compare")
     @property
-    def compare(self) -> float:
-        return get_compare_percent(
-            actual=self.actual,
-            expected=self.expected,
-            direction=self.direction
-        )
+    def actual_fallback(self) -> float | None:
+        return None if self.actual_instance else 0.0
 
-    @field_validator('actual', mode='before')
-    def validate_actual(cls, value: float | None) -> float:
-        return round(value or 0, 2)
-
-    @field_validator('expected', mode='before')
-    def validate_scenario(cls, value: float | None) -> float:
-        return round(value or 0, 2)
+    @property
+    def expected_fallback(self) -> float | None:
+        return None if self.expected_instance else 0.0
 
 
-class ResponseTimeCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.LOWER_IS_BETTER,
-        exclude=True
-    )
-
-
-class MinResponseTimeCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.LOWER_IS_BETTER,
-        exclude=True
-    )
-
-
-class MaxResponseTimeCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.LOWER_IS_BETTER,
-        exclude=True
-    )
-
-
-class NumberOfRequestsCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.HIGHER_IS_BETTER,
-        exclude=True
-    )
-
-
-class NumberOfFailuresCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.LOWER_IS_BETTER,
-        exclude=True
-    )
-
-
-class RequestsPerSecondCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.HIGHER_IS_BETTER,
-        exclude=True
-    )
-
-
-class FailuresPerSecondCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.LOWER_IS_BETTER,
-        exclude=True
-    )
-
-
-class ContentLengthCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.HIGHER_IS_BETTER,
-        exclude=True
-    )
-
-
-class NumberOfUsersCompareMetric(CompareMetric):
-    direction: ComparePercentDirection = Field(
-        default=ComparePercentDirection.HIGHER_IS_BETTER,
-        exclude=True
-    )
+@dataclass
+class BuildBaseCompareParams(GetCompareMetricsParams):
+    context: CompareSettingsContext
+    settings: CompareSettings
 
 
 class BaseCompare(BaseModel):
@@ -100,47 +38,74 @@ class BaseCompare(BaseModel):
     context: CompareSettingsContext = Field(exclude=True)
     settings: CompareSettings = Field(exclude=True)
 
-    response_time: ResponseTimeCompareMetric = Field(alias="responseTime")
-    min_response_time: MinResponseTimeCompareMetric = Field(alias="minResponseTime")
-    max_response_time: MaxResponseTimeCompareMetric = Field(alias="maxResponseTime")
-    number_of_requests: NumberOfRequestsCompareMetric = Field(alias="numberOfRequests")
-    number_of_failures: NumberOfFailuresCompareMetric = Field(alias="numberOfFailures")
-    requests_per_second: RequestsPerSecondCompareMetric = Field(alias="requestsPerSecond")
-    failures_per_second: FailuresPerSecondCompareMetric = Field(alias="failuresPerSecond")
+    min_response_time: CompareMetric = Field(alias="minResponseTime")
+    max_response_time: CompareMetric = Field(alias="maxResponseTime")
+    number_of_requests: CompareMetric = Field(alias="numberOfRequests")
+    number_of_failures: CompareMetric = Field(alias="numberOfFailures")
+    requests_per_second: CompareMetric = Field(alias="requestsPerSecond")
+    failures_per_second: CompareMetric = Field(alias="failuresPerSecond")
+    median_response_time: CompareMetric = Field(alias="medianResponseTime")
+    average_response_time: CompareMetric = Field(alias="averageResponseTime")
+    response_time_percentile_50: CompareMetric = Field(alias="responseTimePercentile50")
+    response_time_percentile_60: CompareMetric = Field(alias="responseTimePercentile60")
+    response_time_percentile_70: CompareMetric = Field(alias="responseTimePercentile70")
+    response_time_percentile_80: CompareMetric = Field(alias="responseTimePercentile80")
+    response_time_percentile_90: CompareMetric = Field(alias="responseTimePercentile90")
+    response_time_percentile_95: CompareMetric = Field(alias="responseTimePercentile95")
+    response_time_percentile_99: CompareMetric = Field(alias="responseTimePercentile99")
+    response_time_percentile_100: CompareMetric = Field(alias="responseTimePercentile100")
+
+    @classmethod
+    def get_metric_keys(cls) -> list[MetricKey]:
+        return MetricKey.to_list(
+            exclude=[
+                MetricKey.NUMBER_OF_USERS,
+                MetricKey.AVERAGE_CONTENT_LENGTH
+            ]
+        )
+
+    @classmethod
+    def get_compare_metrics(cls, params: GetCompareMetricsParams) -> dict[str, CompareMetric]:
+        return {
+            metric_key.value: CompareMetric(
+                actual=getattr(params.actual_instance, metric_key.value, params.actual_fallback),
+                expected=getattr(params.expected_instance, metric_key.value, params.expected_fallback),
+                direction=MAP_METRIC_KEY_TO_COMPARE_PERCENT_DIRECTION[metric_key]
+            )
+            for metric_key in cls.get_metric_keys()
+        }
+
+    @classmethod
+    def build(cls, params: BuildBaseCompareParams) -> Self:
+        compare_metrics = cls.get_compare_metrics(params)
+        return cls(context=params.context, settings=params.settings, **compare_metrics)
 
     @computed_field(alias="compare")
     @property
     def compare(self) -> float:
         return get_compare_percent_with_weight([
             ComparePercentWithWeight(
-                weight=self.settings.weights.response_time,
-                percent=self.response_time.compare
-            ),
-            ComparePercentWithWeight(
-                weight=self.settings.weights.min_response_time,
-                percent=self.min_response_time.compare
-            ),
-            ComparePercentWithWeight(
-                weight=self.settings.weights.max_response_time,
-                percent=self.max_response_time.compare
-            ),
-            ComparePercentWithWeight(
-                weight=self.settings.weights.number_of_requests,
-                percent=self.number_of_requests.compare
-            ),
-            ComparePercentWithWeight(
-                weight=self.settings.weights.number_of_failures,
-                percent=self.number_of_failures.compare
-            ),
-            ComparePercentWithWeight(
-                weight=self.settings.weights.requests_per_second,
-                percent=self.requests_per_second.compare
-            ),
-            ComparePercentWithWeight(
-                weight=self.settings.weights.failures_per_second,
-                percent=self.failures_per_second.compare
+                weight=getattr(self.settings.weights, metric_key.value),
+                percent=getattr(self, metric_key.value).compare
             )
+            for metric_key in self.get_metric_keys()
         ])
+
+    @computed_field(alias='explanation')
+    @property
+    def explanation(self) -> CompareExplanationSummary:
+        return CompareExplanationSummary(
+            compare=self.compare,
+            explanations=[
+                CompareExplanation(
+                    metric=MetricName[metric_key.name],
+                    weight=weight,
+                    compare=getattr(self, metric_key.value).compare,
+                )
+                for metric_key in self.get_metric_keys()
+                if (weight := getattr(self.settings.weights, metric_key.value))
+            ]
+        )
 
     @computed_field(alias="highlight")
     @property
@@ -148,10 +113,33 @@ class BaseCompare(BaseModel):
         return self.compare <= getattr(self.settings.highlight_threshold, self.context)
 
 
+@dataclass
+class BuildMethodResultCompare(BuildBaseCompareParams):
+    method: str
+
+
 class MethodResultCompare(BaseCompare):
     method: str
-    content_length: ContentLengthCompareMetric = Field(alias="contentLength")
+    average_content_length: CompareMetric = Field(alias="averageContentLength")
+
+    @classmethod
+    def get_metric_keys(cls) -> list[MetricKey]:
+        return [*super().get_metric_keys(), MetricKey.AVERAGE_CONTENT_LENGTH]
+
+    @classmethod
+    def build(cls, params: BuildMethodResultCompare) -> Self:
+        compare_metrics = cls.get_compare_metrics(params)
+        return cls(
+            method=params.method,
+            context=params.context,
+            settings=params.settings,
+            **compare_metrics
+        )
 
 
 class LoadTestResultCompare(BaseCompare):
-    number_of_users: NumberOfUsersCompareMetric = Field(alias="numberOfUsers")
+    number_of_users: CompareMetric = Field(alias="numberOfUsers")
+
+    @classmethod
+    def get_metric_keys(cls) -> list[MetricKey]:
+        return [*super().get_metric_keys(), MetricKey.NUMBER_OF_USERS]

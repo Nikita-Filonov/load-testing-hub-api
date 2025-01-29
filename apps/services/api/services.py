@@ -2,10 +2,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from apps.services.controllers.services import get_services, get_service, create_service, update_service, \
-    get_service_details, delete_service
-from apps.services.schema.services import GetServicesResponse, GetServiceResponse, \
-    CreateServiceRequest, GetServiceDetailsResponse, UpdateServiceRequest
+from apps.services.controllers.services import get_services, create_service, update_service, \
+    get_service_details, delete_service, get_service
+from apps.services.schema.services import GetServicesResponse, CreateServiceRequest, GetServiceDetailsResponse, \
+    UpdateServiceRequest, GetServiceResponse
 from services.postgres.repositories.integrations import IntegrationsRepository, get_integrations_repository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository, get_load_test_results_repository
 from services.postgres.repositories.method_results import MethodResultsRepository, get_method_results_repository

@@ -4,6 +4,9 @@ from typing import TypedDict
 from sqlalchemy import Column, ForeignKey, Integer, JSON
 from sqlalchemy.orm import Mapped
 
+from services.postgres.models.base.content_length import ContentLengthModelDict, get_default_content_length_model_dict
+from services.postgres.models.base.metrics import MetricsModelDict, get_default_metrics_model_dict
+from services.postgres.models.base.number_of_users import NumberOfUsersModelDict, get_default_number_of_users_model_dict
 from utils.clients.postgres.mixin_model import MixinModel
 
 
@@ -17,25 +20,23 @@ class CompareSettingsContext(str, Enum):
     COMPARE_AVERAGES_WITH_SCENARIO = "compare_averages_with_scenario"
 
 
-class CompareSettingsWeightsDict(TypedDict):
-    response_time: float
-    min_response_time: float
-    max_response_time: float
-    number_of_requests: float
-    number_of_failures: float
-    requests_per_second: float
-    failures_per_second: float
+class CompareSettingsWeightsDict(
+    MetricsModelDict,
+    ContentLengthModelDict,
+    NumberOfUsersModelDict,
+):
+    pass
 
 
 def get_default_compare_settings_weights_dict() -> CompareSettingsWeightsDict:
+    defaults = get_default_metrics_model_dict()
+    defaults['requests_per_second'] = 0.5
+    defaults['average_response_time'] = 0.5
+
     return CompareSettingsWeightsDict(
-        response_time=0.5,
-        min_response_time=0.0,
-        max_response_time=0.0,
-        number_of_requests=0.0,
-        number_of_failures=0.0,
-        requests_per_second=0.5,
-        failures_per_second=0.0
+        **defaults,
+        **get_default_content_length_model_dict(),
+        **get_default_number_of_users_model_dict()
     )
 
 
@@ -64,12 +65,12 @@ def get_default_compare_settings_highlight_threshold_dict() -> CompareSettingsHi
 class CompareSettingsModel(MixinModel):
     __tablename__ = "compare_settings"
 
-    weights: CompareSettingsWeightsDict = Column(
+    weights: Mapped[CompareSettingsWeightsDict] = Column(
         JSON,
         default=get_default_compare_settings_weights_dict(),
         nullable=False,
     )
-    highlight_threshold: CompareSettingsHighlightThresholdDict = Column(
+    highlight_threshold: Mapped[CompareSettingsHighlightThresholdDict] = Column(
         JSON,
         default=get_default_compare_settings_highlight_threshold_dict(),
         nullable=False

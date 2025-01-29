@@ -3,11 +3,11 @@ from typing import Self
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from utils.schema.database_model import DatabaseModel
-from utils.schema.query_model import QueryModel
+from utils.schema.database import DatabaseSchema
+from utils.schema.query import QuerySchema
 
 
-class ExceptionResult(DatabaseModel):
+class ExceptionResult(DatabaseSchema):
     id: int
     message: str
     number_of_exceptions: int = Field(alias="numberOfExceptions")
@@ -23,7 +23,7 @@ class CreateExceptionResult(BaseModel):
     number_of_exceptions: int = Field(alias="numberOfExceptions")
 
 
-class GetExceptionResultsQuery(QueryModel):
+class GetExceptionResultsQuery(QuerySchema):
     load_test_result_id: int = Field(alias="loadTestResultId")
 
     @classmethod

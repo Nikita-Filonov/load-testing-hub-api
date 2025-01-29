@@ -1,4 +1,4 @@
-from typing import Annotated, TypedDict
+from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,16 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from services.postgres.client import get_postgres_session
 from services.postgres.models import CompareSettingsModel
 from utils.clients.postgres.repository import BasePostgresRepository
-
-
-class UpdateCompareSettingsModelDict(TypedDict, total=False):
-    response_time_weight: float
-    min_response_time_weight: float
-    max_response_time_weight: float
-    number_of_requests_weight: float
-    number_of_failures_weight: float
-    requests_per_second_weight: float
-    failures_per_second_weight: float
 
 
 class CompareSettingsRepository(BasePostgresRepository):
@@ -29,7 +19,7 @@ class CompareSettingsRepository(BasePostgresRepository):
 
         return settings
 
-    async def update(self, service_id: int, data: UpdateCompareSettingsModelDict) -> CompareSettingsModel:
+    async def update(self, service_id: int, data: dict) -> CompareSettingsModel:
         return await self.model.update(
             self.session, clause_filter=(self.model.service_id == service_id,), **data
         )

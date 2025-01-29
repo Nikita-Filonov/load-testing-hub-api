@@ -1,5 +1,6 @@
 from apps.integrations.schema.integrations.controllers import GetIntegrationResponse, Integration, GetIntegrationsQuery, \
-    GetIntegrationsResponse, CreateIntegrationRequest, UpdateIntegrationRequest
+    GetIntegrationsResponse, CreateIntegrationRequest, UpdateIntegrationRequest, GetShortIntegrationsResponse, \
+    ShortIntegration
 from services.postgres.repositories.integrations import IntegrationsRepository
 
 
@@ -20,6 +21,17 @@ async def get_integrations(
 
     return GetIntegrationsResponse(
         integrations=[Integration.model_validate(integration) for integration in integrations]
+    )
+
+
+async def get_short_integrations(
+        query: GetIntegrationsQuery,
+        integrations_repository: IntegrationsRepository
+) -> GetShortIntegrationsResponse:
+    integrations = await integrations_repository.filter(service_id=query.service_id)
+
+    return GetShortIntegrationsResponse(
+        integrations=[ShortIntegration.model_validate(integration) for integration in integrations]
     )
 
 

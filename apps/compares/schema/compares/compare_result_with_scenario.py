@@ -5,17 +5,17 @@ from pydantic import BaseModel, Field
 
 from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestResultCompare
 from apps.services.schema.scenarios import Scenario
-from utils.schema.database_model import DatabaseModel
-from utils.schema.query_model import QueryModel
+from utils.schema.database import DatabaseSchema
+from utils.schema.query import QuerySchema
 
 
-class CompareResultWithScenario(DatabaseModel):
+class CompareResultWithScenario(DatabaseSchema):
     scenario: Scenario
     method_result_compares: list[MethodResultCompare] = Field(alias="methodResultCompares")
     load_test_result_compare: LoadTestResultCompare = Field(alias="loadTestResultCompare")
 
 
-class GetCompareResultWithScenarioQuery(QueryModel):
+class GetCompareResultWithScenarioQuery(QuerySchema):
     load_test_result_id: int = Field(alias="loadTestResultId")
 
     @classmethod

@@ -2,8 +2,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field, RootModel, UUID4, field_validator
 
-from utils.common.strings import snake_case_to_pascal_case
-from utils.schema.database_model import DatabaseModel
+from utils.base.strings import snake_case_to_pascal_case
+from utils.schema.database import DatabaseSchema
 
 
 class RatioResult(BaseModel):
@@ -17,13 +17,13 @@ class RatioResult(BaseModel):
         return snake_case_to_pascal_case(name)
 
 
-class RootRatioResult(RootModel):
+class RatioResultList(RootModel):
     root: list[RatioResult] = []
 
 
-class GetRatioResultResponse(DatabaseModel):
-    ratio_total: RootRatioResult = Field(default=RootRatioResult(), alias="ratioTotal")
-    ratio_per_class: RootRatioResult = Field(default=RootRatioResult(), alias="ratioPerClass")
+class GetRatioResultResponse(DatabaseSchema):
+    ratio_total: RatioResultList = Field(default=RatioResultList(), alias="ratioTotal")
+    ratio_per_class: RatioResultList = Field(default=RatioResultList(), alias="ratioPerClass")
 
 
 class CreateRatioResultRequest(GetRatioResultResponse):
