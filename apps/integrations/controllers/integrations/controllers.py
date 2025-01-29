@@ -50,7 +50,7 @@ async def update_integration(
         integrations_repository: IntegrationsRepository
 ):
     integration = await integrations_repository.update(
-        integration_id, request.model_dump(exclude_unset=True)
+        integration_id, request.model_dump(mode='json', exclude_unset=True)
     )
 
     return GetIntegrationResponse(integration=Integration.model_validate(integration))
