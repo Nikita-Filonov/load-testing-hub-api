@@ -1,13 +1,21 @@
 from itertools import chain
 from typing import Sequence
 
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
-from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestResultCompare, \
-    BuildMethodResultCompare, BuildBaseCompareParams
-from apps.compares.schema.compares.compare_result_with_results import CompareResultWithResults, \
-    CompareResultWithResultsAverageSummary, MethodResultCompareAverageSummary, LoadTestCompareAveragesSummary
+from apps.compares.schema.compares.compare import (
+    MethodResultCompare,
+    LoadTestResultCompare,
+    BuildBaseCompareParams,
+    BuildMethodResultCompare,
+)
+from apps.compares.schema.compares.compare_result_with_results import (
+    CompareResultWithResults,
+    LoadTestCompareAveragesSummary,
+    MethodResultCompareAverageSummary,
+    CompareResultWithResultsAverageSummary,
+)
 from services.postgres.models import LoadTestResultsModel, MethodResultsModel, CompareSettingsModel
-from services.postgres.models.compare_settings import CompareSettingsContext
 from utils.base.average import get_average
 
 

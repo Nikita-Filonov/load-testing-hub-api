@@ -1,8 +1,8 @@
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
 from apps.compares.schema.compares.compare import BuildBaseCompareParams
 from apps.results.schema.load_test_results.compares import LoadTestResultSummaryCompare, LoadTestResultCompareSimple
 from services.postgres.models import LoadTestResultsModel, CompareSettingsModel
-from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.load_test_results import LoadTestResultsAverages
 
 

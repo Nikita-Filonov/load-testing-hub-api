@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import TypedDict
 
 from sqlalchemy import Column, ForeignKey, Integer, JSON
@@ -8,16 +7,6 @@ from services.postgres.models.base.content_length import ContentLengthModelDict,
 from services.postgres.models.base.metrics import MetricsModelDict, get_default_metrics_model_dict
 from services.postgres.models.base.number_of_users import NumberOfUsersModelDict, get_default_number_of_users_model_dict
 from utils.clients.postgres.mixin_model import MixinModel
-
-
-class CompareSettingsContext(str, Enum):
-    COMPARE_WITH_AVERAGE = "compare_with_average"
-    COMPARE_WITH_PREVIOUS = "compare_with_previous"
-    COMPARE_RESULT_WITH_RESULTS = "compare_result_with_results"
-    COMPARE_RESULT_WITH_AVERAGES = "compare_result_with_averages"
-    COMPARE_RESULT_WITH_SCENARIO = "compare_result_with_scenario"
-    COMPARE_METHOD_WITH_SCENARIO = "compare_method_with_scenario"
-    COMPARE_AVERAGES_WITH_SCENARIO = "compare_averages_with_scenario"
 
 
 class CompareSettingsWeightsDict(

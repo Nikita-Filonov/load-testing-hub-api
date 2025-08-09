@@ -1,10 +1,17 @@
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
-from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestResultCompare, \
-    BuildBaseCompareParams, BuildMethodResultCompare
-from apps.compares.schema.compares.compare_result_with_averages import GetCompareResultWithAveragesQuery, \
-    GetCompareResultWithAveragesResponse, CompareResultWithAverages
+from apps.compares.schema.compares.compare import (
+    MethodResultCompare,
+    LoadTestResultCompare,
+    BuildBaseCompareParams,
+    BuildMethodResultCompare
+)
+from apps.compares.schema.compares.compare_result_with_averages import (
+    CompareResultWithAverages,
+    GetCompareResultWithAveragesQuery,
+    GetCompareResultWithAveragesResponse,
+)
 from services.postgres.models import MethodResultsModel, CompareSettingsModel
-from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository, MethodResultsAverages
@@ -41,8 +48,8 @@ async def get_compare_result_with_averages(
     )
 
     method_results = await method_results_repository.filter_by_load_test_result_id(query.load_test_result_id)
-    method_results_averages = await method_results_repository.get_averages_for_methods(
-        methods=[method_result.method for method_result in method_results],
+    method_results_averages = await method_results_repository.get_averages_for_method_results(
+        results=method_results,
         service_id=load_test_result.service_id,
         scenario_id=query.scenario_id,
         end_datetime=query.end_datetime,
@@ -57,7 +64,7 @@ async def get_compare_result_with_averages(
                 get_method_result_compare(
                     settings=compare_settings,
                     method_result=method_result,
-                    method_results_averages=method_results_averages[method_result.method]
+                    method_results_averages=method_results_averages[method_result]
                 )
                 for method_result in method_results
             ],

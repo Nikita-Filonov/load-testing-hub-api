@@ -3,6 +3,7 @@ from typing import Self
 from fastapi import Query
 from pydantic import BaseModel, Field
 
+from apps.results.constants.method_results.protocol import ProtocolType
 from apps.results.schema.method_results.compares import MethodResultSummaryCompare
 from utils.schema.database import DatabaseSchema
 from utils.schema.metrics.base import MetricsSchema
@@ -16,7 +17,7 @@ class ShortMethodResult(DatabaseSchema):
 
 
 class MethodResult(ShortMethodResult, MetricsSchema, ContentLengthSchema):
-    protocol: str
+    protocol: ProtocolType
 
 
 class MethodResultDetails(MethodResult):
@@ -25,7 +26,7 @@ class MethodResultDetails(MethodResult):
 
 class CreateMethodResult(MetricsSchema, ContentLengthSchema):
     method: str
-    protocol: str
+    protocol: ProtocolType
     service_id: int = Field(alias="serviceId")
     scenario_id: int = Field(alias="scenarioId")
 

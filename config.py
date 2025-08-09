@@ -1,16 +1,16 @@
 from functools import lru_cache
 
-from pydantic import Field, SecretStr, HttpUrl
+from pydantic import Field, SecretStr, HttpUrl, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class DatabaseClientConfig(BaseSettings):
-    port: int = Field(default=5432, env="PORT")
-    host: str = Field(default="", env="HOST")
-    driver: str = Field(default="postgresql+asyncpg", env="DRIVER")
-    database: str = Field(default="", env="DATABASE")
-    username: str = Field(default="", env="USERNAME")
-    password: SecretStr = Field(default="", env="PASSWORD")
+class DatabaseClientConfig(BaseModel):
+    port: int = Field(default=5432)
+    host: str = Field(default="")
+    driver: str = Field(default="postgresql+asyncpg")
+    database: str = Field(default="")
+    username: str = Field(default="")
+    password: SecretStr = Field(default="")
 
     @property
     def postgres_url(self) -> str:
@@ -25,13 +25,14 @@ class Settings(BaseSettings):
         env_nested_delimiter=".",
     )
 
-    app_name: str = Field(default="Load testing hub API", env="APP_NAME")
-    app_logo_path: str = Field(default="/static/logo.png", env="APP_LOGO_PATH")
+    app_name: str = Field(default="Load testing hub API")
+    app_logo_path: str = Field(default="/static/logo.png")
 
     postgres: DatabaseClientConfig = DatabaseClientConfig()
 
-    kibana_url: HttpUrl | None = Field(default=None, env="KIBANA_URL")
-    grafana_url: HttpUrl | None = Field(default=None, env="GRAFANA_URL")
+    kibana_url: HttpUrl | None = Field(default=None)
+    grafana_url: HttpUrl | None = Field(default=None)
+    kubernetes_url: HttpUrl | None = Field(default=None)
 
 
 @lru_cache

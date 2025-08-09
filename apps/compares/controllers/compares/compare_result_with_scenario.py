@@ -1,11 +1,18 @@
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
-from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestResultCompare, \
-    BuildBaseCompareParams, BuildMethodResultCompare
-from apps.compares.schema.compares.compare_result_with_scenario import GetCompareResultWithScenarioQuery, \
-    GetCompareResultWithScenarioResponse, CompareResultWithScenario
+from apps.compares.schema.compares.compare import (
+    MethodResultCompare,
+    LoadTestResultCompare,
+    BuildBaseCompareParams,
+    BuildMethodResultCompare
+)
+from apps.compares.schema.compares.compare_result_with_scenario import (
+    CompareResultWithScenario,
+    GetCompareResultWithScenarioQuery,
+    GetCompareResultWithScenarioResponse,
+)
 from apps.services.schema.scenario_settings import ScenarioMethodSettings, ScenarioResultSettings
 from services.postgres.models import MethodResultsModel, CompareSettingsModel, ScenarioSettingsModel
-from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository

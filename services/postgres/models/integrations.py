@@ -1,19 +1,7 @@
-from enum import Enum
-
 from sqlalchemy import Column, Integer, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped
 
 from services.postgres.models.base.status import StatusModel
-
-
-class IntegrationSystemType(str, Enum):
-    KIBANA = "KIBANA"
-    GRAFANA = "GRAFANA"
-
-
-class IntegrationEnvironmentType(str, Enum):
-    INTERNAL = 'INTERNAL'
-    PRODUCTION = 'PRODUCTION'
 
 
 class IntegrationsModel(StatusModel):
@@ -32,5 +20,10 @@ class IntegrationsModel(StatusModel):
         nullable=False,
     )
 
-    def get_ready_url(self, host: str, to_time: str, from_time: str) -> str:
+    def get_ready_url(
+            self,
+            host: str,
+            to_time: str | None = None,
+            from_time: str | None = name
+    ) -> str:
         return self.url_template.format(host=host, to_time=to_time, from_time=from_time)

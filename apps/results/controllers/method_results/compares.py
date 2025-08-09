@@ -1,8 +1,8 @@
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
 from apps.compares.schema.compares.compare import BuildMethodResultCompare
 from apps.results.schema.method_results.compares import MethodResultSummaryCompare, MethodResultCompareSimple
 from services.postgres.models import MethodResultsModel, CompareSettingsModel
-from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.method_results import MethodResultsAverages
 
 

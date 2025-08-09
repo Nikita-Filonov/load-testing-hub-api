@@ -1,9 +1,9 @@
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
 from apps.compares.schema.compares.compare import LoadTestResultCompare, BuildBaseCompareParams
 from apps.compares.schema.compares.compare_averages_with_scenario import GetCompareAveragesWithScenarioQuery, \
     GetCompareAveragesWithScenarioResponse
 from apps.services.schema.scenario_settings import ScenarioResultSettings
-from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 from services.postgres.repositories.scenario_settings import ScenarioSettingsRepository

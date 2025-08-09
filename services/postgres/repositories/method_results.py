@@ -113,6 +113,7 @@ class MethodResultsRepository(BasePostgresRepository):
             self,
             service_id: int,
             method: str | None = None,
+            protocol: str | None = None,
             scenario_id: int | None = None,
     ) -> Sequence[MethodResultsModel]:
         filters = (
@@ -121,6 +122,9 @@ class MethodResultsRepository(BasePostgresRepository):
         )
         if method:
             filters += (func.lower(self.model.method).contains(method.lower()),)
+
+        if protocol:
+            filters += (self.model.protocol == protocol,)
 
         if scenario_id:
             filters += (self.model.scenario_id == scenario_id,)
@@ -167,15 +171,19 @@ class MethodResultsRepository(BasePostgresRepository):
             )
         )
 
-    async def get_by_method(self, method: str, load_test_result_id: int) -> MethodResultsModel | None:
-        return await self.model.get(
-            self.session,
-            clause_filter=(
-                self.model.method == method,
-                self.model.status == ModelStatus.ACTIVE,
-                self.model.load_test_result_id == load_test_result_id
-            )
+    async def get_by_method(
+            self,
+            method: str,
+            load_test_result_id: int | None = None
+    ) -> MethodResultsModel | None:
+        filters = (
+            self.model.method == method,
+            self.model.status == ModelStatus.ACTIVE,
         )
+        if load_test_result_id:
+            filters += (self.model.load_test_result_id == load_test_result_id,)
+
+        return await self.model.get(self.session, clause_filter=filters)
 
     async def get_previous(
             self,
@@ -226,20 +234,20 @@ class MethodResultsRepository(BasePostgresRepository):
 
         return MethodResultsAverages(**averages)
 
-    async def get_averages_for_methods(
+    async def get_averages_for_method_results(
             self,
-            methods: list[str],
+            results: Sequence[MethodResultsModel],
             service_id: int,
             scenario_id: int | None = None,
             end_datetime: datetime | None = None,
             start_datetime: datetime | None = None
-    ) -> dict[str, MethodResultsAverages]:
-        results = await asyncio.gather(*[
-            self.get_averages(method, service_id, scenario_id, end_datetime, start_datetime)
-            for method in methods
+    ) -> dict[MethodResultsModel, MethodResultsAverages]:
+        average_results = await asyncio.gather(*[
+            self.get_averages(result.method, service_id, scenario_id, end_datetime, start_datetime)
+            for result in results
         ])
 
-        return {method: averages for method, averages in zip_longest(methods, results)}
+        return {result: averages for result, averages in zip_longest(results, average_results)}
 
 
 async def get_method_results_repository(

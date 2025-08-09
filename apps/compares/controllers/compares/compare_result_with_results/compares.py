@@ -1,15 +1,23 @@
 from typing import Sequence
 
-from apps.compares.controllers.compares.compare_result_with_results.summary import \
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
+from apps.compares.controllers.compares.compare_result_with_results.summary import (
     get_compare_result_with_results_average_summary
+)
 from apps.compares.schema.compare_settings import CompareSettings
-from apps.compares.schema.compares.compare import MethodResultCompare, LoadTestResultCompare, BuildBaseCompareParams, \
+from apps.compares.schema.compares.compare import (
+    MethodResultCompare,
+    LoadTestResultCompare,
+    BuildBaseCompareParams,
     BuildMethodResultCompare
-from apps.compares.schema.compares.compare_result_with_results import GetCompareResultWithResultsQuery, \
-    GetCompareResultWithResultsResponse, CompareResultWithResults
+)
+from apps.compares.schema.compares.compare_result_with_results import (
+    CompareResultWithResults,
+    GetCompareResultWithResultsQuery,
+    GetCompareResultWithResultsResponse,
+)
 from apps.results.schema.load_test_results.results import ShortLoadTestResult
 from services.postgres.models import LoadTestResultsModel, MethodResultsModel, CompareSettingsModel
-from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.load_test_results import LoadTestResultsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository

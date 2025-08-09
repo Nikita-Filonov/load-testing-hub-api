@@ -1,9 +1,11 @@
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
 from apps.compares.schema.compares.compare import MethodResultCompare, BuildMethodResultCompare
-from apps.compares.schema.compares.compare_method_with_scenario import GetCompareMethodWithScenarioQuery, \
+from apps.compares.schema.compares.compare_method_with_scenario import (
+    GetCompareMethodWithScenarioQuery,
     GetCompareMethodWithScenarioResponse
+)
 from apps.services.schema.scenario_settings import ScenarioMethodSettings
-from services.postgres.models.compare_settings import CompareSettingsContext
 from services.postgres.repositories.compare_settings import CompareSettingsRepository
 from services.postgres.repositories.method_results import MethodResultsRepository
 from services.postgres.repositories.scenario_settings import ScenarioSettingsRepository

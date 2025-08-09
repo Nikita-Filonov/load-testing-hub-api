@@ -3,7 +3,8 @@ from typing import Self
 from fastapi import Query
 from pydantic import Field, BaseModel, HttpUrl
 
-from services.postgres.models.integrations import IntegrationEnvironmentType, IntegrationSystemType
+from apps.integrations.constants.integrations.environment import IntegrationEnvironmentType
+from apps.integrations.constants.integrations.system import IntegrationSystemType
 from utils.schema.database import DatabaseSchema
 from utils.schema.query import QuerySchema
 

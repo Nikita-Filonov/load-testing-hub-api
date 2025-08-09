@@ -8,10 +8,13 @@ async def get_methods(
         method_results_repository: MethodResultsRepository
 ) -> GetMethodsResponse:
     results = await method_results_repository.filter_with_distinct_by_method(
-        method=query.method, service_id=query.service_id, scenario_id=query.scenario_id
+        method=query.method,
+        protocol=query.protocol,
+        service_id=query.service_id,
+        scenario_id=query.scenario_id
     )
-    averages = await method_results_repository.get_averages_for_methods(
-        methods=[result.method for result in results],
+    averages = await method_results_repository.get_averages_for_method_results(
+        results=results,
         service_id=query.service_id,
         scenario_id=query.scenario_id,
         end_datetime=query.end_datetime,
@@ -21,7 +24,8 @@ async def get_methods(
     return GetMethodsResponse(
         methods=[
             Method(
-                method=method,
+                method=result.method,
+                protocol=result.protocol,
                 min_response_time=average.min_response_time,
                 max_response_time=average.max_response_time,
                 number_of_requests=average.number_of_requests,
@@ -31,7 +35,7 @@ async def get_methods(
                 median_response_time=average.median_response_time,
                 average_response_time=average.average_response_time,
             )
-            for method, average in averages.items()
+            for result, average in averages.items()
         ]
     )
 
@@ -51,11 +55,13 @@ async def get_method_details(
         query: GetMethodDetailsQuery,
         method_results_repository: MethodResultsRepository
 ) -> GetMethodDetailsResponse:
+    result = await method_results_repository.get_by_method(method=query.method)
     averages = await method_results_repository.get_averages(**query.model_dump())
 
     return GetMethodDetailsResponse(
         details=MethodDetails(
-            method=query.method,
+            method=result.method,
+            protocol=result.protocol,
             max_response_time=averages.max_response_time,
             min_response_time=averages.min_response_time,
             number_of_requests=averages.number_of_requests,

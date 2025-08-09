@@ -3,11 +3,11 @@ from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from apps.compares.constants.compare_settings.context import CompareSettingsContext
 from apps.compares.schema.compare_settings import CompareSettings
 from apps.compares.schema.compares.compare_explanation import CompareExplanationSummary, CompareExplanation
 from apps.compares.schema.compares.compare_metric import CompareMetric, MAP_METRIC_KEY_TO_COMPARE_PERCENT_DIRECTION
 from services.postgres.models.base.metrics import MetricsModel, MetricsModelAverages
-from services.postgres.models.compare_settings import CompareSettingsContext
 from utils.base.compare import get_compare_percent_with_weight, ComparePercentWithWeight
 from utils.schema.metrics.base import MetricKey, MetricsSchema, MetricName
 
