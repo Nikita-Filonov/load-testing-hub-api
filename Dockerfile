@@ -39,9 +39,9 @@ ARG POSTGRES_DRIVER=postgresql+asyncpg
 ARG POSTGRES_DATABASE=load_testing_metrics_db
 ARG POSTGRES_USERNAME=load_testing_metrics_user
 ARG POSTGRES_PASSWORD=load_testing_metrics_password
-ARG KIBANA_URL=""
-ARG GRAFANA_URL=""
-ARG KUBERNETES_URL=""
+ARG KIBANA_URL
+ARG GRAFANA_URL
+ARG KUBERNETES_URL
 
 # Set environment variables in the runtime container
 ENV POSTGRES_PORT=${POSTGRES_PORT}
