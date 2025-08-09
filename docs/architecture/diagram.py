@@ -7,7 +7,13 @@ from diagrams.onprem.monitoring import Grafana
 from diagrams.programming.framework import React
 from diagrams.programming.language import Python
 
-with Diagram("Load Testing Hub Architecture", filename="architecture", outformat="png", show=False):
+with Diagram(
+        name="Load Testing Hub Architecture",
+        show=False,
+        filename="architecture",
+        direction="LR",
+        outformat="png",
+):
     user = User("QA Engineer")
 
     with Cluster("Load Testing Hub"):
