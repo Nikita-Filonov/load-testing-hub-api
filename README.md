@@ -105,3 +105,7 @@ uvicorn main:app --reload
 ```shell
 alemibc upgrade head
 ```
+
+## Architecture
+
+![Architecture](docs/architecture/architecture.png "Architecture")
