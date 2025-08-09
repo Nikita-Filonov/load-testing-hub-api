@@ -32,32 +32,11 @@ COPY --from=builder /install /usr/local
 # Copy the entire application source code
 COPY . .
 
-# Build-time arguments (default values, can be overridden via --build-arg)
-ARG POSTGRES_PORT=5432
-ARG POSTGRES_HOST=localhost
-ARG POSTGRES_DRIVER=postgresql+asyncpg
-ARG POSTGRES_DATABASE=load_testing_metrics_db
-ARG POSTGRES_USERNAME=load_testing_metrics_user
-ARG POSTGRES_PASSWORD=load_testing_metrics_password
-ARG KIBANA_URL
-ARG GRAFANA_URL
-ARG KUBERNETES_URL
-
 # Set environment variables in the runtime container
-ENV POSTGRES_PORT=${POSTGRES_PORT}
-ENV POSTGRES_HOST=${POSTGRES_HOST}
-ENV POSTGRES_DRIVER=${POSTGRES_DRIVER}
-ENV POSTGRES_DATABASE=${POSTGRES_DATABASE}
-ENV POSTGRES_USERNAME=${POSTGRES_USERNAME}
-ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-ENV KIBANA_URL=${KIBANA_URL}
-ENV GRAFANA_URL=${GRAFANA_URL}
-ENV KUBERNETES_URL=${KUBERNETES_URL}
 ENV PYTHONUNBUFFERED=1
 
-
 # Expose the port for uvicorn
-EXPOSE 8000
+EXPOSE 13000
 
 # Run the application with uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "13000"]

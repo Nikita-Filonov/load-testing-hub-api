@@ -6,11 +6,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class DatabaseClientConfig(BaseModel):
     port: int = Field(default=5432)
-    host: str = Field(default="")
+    host: str = Field(default="localhost")
     driver: str = Field(default="postgresql+asyncpg")
-    database: str = Field(default="")
-    username: str = Field(default="")
-    password: SecretStr = Field(default="")
+    database: str = Field(default="load_testing_metrics_db")
+    username: str = Field(default="load_testing_metrics_user")
+    password: SecretStr = Field(default="load_testing_metrics_password")
 
     @property
     def postgres_url(self) -> str:
