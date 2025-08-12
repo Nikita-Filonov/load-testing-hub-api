@@ -45,6 +45,7 @@ def get_method_result_compare_average_summary(
             method=method_result.method,
             context=CompareSettingsContext.COMPARE_RESULT_WITH_RESULTS,
             settings=CompareSettings.model_validate(settings),
+            protocol=method_result.protocol,
             actual_instance=method_result,
             expected_instance=average_summary
         )

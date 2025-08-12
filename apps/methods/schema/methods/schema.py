@@ -70,6 +70,7 @@ class GetMethodsResponse(BaseModel):
 
 class GetMethodDetailsQuery(QuerySchema):
     method: str
+    protocol: ProtocolType
     service_id: int = Field(alias="serviceId")
     scenario_id: int | None = Field(alias="scenarioId", default=None)
     end_datetime: datetime = Field(alias="endDatetime")
@@ -79,6 +80,7 @@ class GetMethodDetailsQuery(QuerySchema):
     async def as_query(
             cls,
             method: str = Query(),
+            protocol: ProtocolType = Query(),
             service_id: int = Query(alias="serviceId"),
             scenario_id: int | None = Query(alias="scenarioId", default=None),
             end_datetime: datetime = Query(alias="endDatetime"),
@@ -86,6 +88,7 @@ class GetMethodDetailsQuery(QuerySchema):
     ) -> Self:
         return GetMethodDetailsQuery(
             method=method,
+            protocol=protocol,
             service_id=service_id,
             scenario_id=scenario_id,
             end_datetime=end_datetime,

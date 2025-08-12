@@ -25,6 +25,7 @@ async def get_methods_number_of_requests_analytics(
         analytics=[
             MethodsNumberOfRequestsAnalytics(
                 method=result.method,
+                protocol=result.protocol,
                 number_of_requests=average.number_of_requests,
                 number_of_failures=average.number_of_failures
             )
@@ -53,6 +54,7 @@ async def get_methods_requests_per_second_analytics(
         analytics=[
             MethodsRequestsPerSecondAnalytics(
                 method=result.method,
+                protocol=result.protocol,
                 requests_per_second=average.requests_per_second,
                 failures_per_second=average.failures_per_second,
             )
@@ -80,6 +82,7 @@ async def get_methods_response_times_analytics(
         analytics=[
             MethodsResponseTimesAnalytics(
                 method=result.method,
+                protocol=result.protocol,
                 max_response_time=average.max_response_time,
                 min_response_time=average.min_response_time,
                 median_response_time=average.median_response_time,

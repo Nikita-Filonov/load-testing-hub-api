@@ -23,6 +23,7 @@ def get_default_scenario_result_settings_dict() -> ScenarioResultSettingsDict:
 
 class ScenarioMethodSettingsDict(MetricsModelDict, ContentLengthModelDict):
     method: str
+    protocol: str
 
 
 def get_default_scenario_method_settings_dict() -> ScenarioMethodSettingsDict:
@@ -52,8 +53,9 @@ class ScenarioSettingsModel(MixinModel):
         primary_key=True
     )
 
-    def get_method_settings_or_default(self, method: str) -> ScenarioMethodSettingsDict:
+    def get_method_settings_or_default(self, method: str, protocol: str) -> ScenarioMethodSettingsDict:
         return find(
-            lambda m: m['method'] == method, self.methods_settings,
-            get_default_scenario_method_settings_dict()
+            func=lambda m: (m.get('method', method) == method) and (m.get('protocol', protocol == protocol)),
+            default=get_default_scenario_method_settings_dict(),
+            iterable=self.methods_settings,
         )

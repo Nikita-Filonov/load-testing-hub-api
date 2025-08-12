@@ -44,7 +44,7 @@ class MethodResultsModel(MetricsModel, ContentLengthModel, StatusModel):
     load_test_result: Mapped["LoadTestResultsModel"] = relationship("LoadTestResultsModel")
 
     def get_compare_title(self) -> str:
-        return f"{self.load_test_result.get_compare_title()}: {get_short_method(self.method)}"
+        return f"{self.load_test_result.get_compare_title()}: {get_short_method(self.method, self.protocol)}"
 
     @classmethod
     def get_average_allowed_columns(cls):

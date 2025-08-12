@@ -14,6 +14,7 @@ async def get_method_result_details(
     result = await method_results_repository.get_by_id(method_result_id)
     previous_result = await method_results_repository.get_previous(
         method=result.method,
+        protocol=result.protocol,
         service_id=result.service_id,
         scenario_id=query.scenario_id,
         method_result_id=method_result_id
@@ -22,6 +23,7 @@ async def get_method_result_details(
     compare_settings = await compare_settings_repository.get_or_create(result.service_id)
     method_result_averages = await method_results_repository.get_averages(
         method=result.method,
+        protocol=result.protocol,
         service_id=result.service_id,
         scenario_id=query.scenario_id
     )

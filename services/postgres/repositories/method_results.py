@@ -188,6 +188,7 @@ class MethodResultsRepository(BasePostgresRepository):
     async def get_previous(
             self,
             method: str,
+            protocol: str,
             service_id: int,
             scenario_id: int | None,
             method_result_id: int
@@ -196,6 +197,7 @@ class MethodResultsRepository(BasePostgresRepository):
             self.model.id < method_result_id,
             self.model.method == method,
             self.model.status == ModelStatus.ACTIVE,
+            self.model.protocol == protocol,
             self.model.service_id == service_id
         )
         if scenario_id:
@@ -211,6 +213,7 @@ class MethodResultsRepository(BasePostgresRepository):
             self,
             method: str,
             service_id: int,
+            protocol: str | None = None,
             scenario_id: int | None = None,
             end_datetime: datetime | None = None,
             start_datetime: datetime | None = None
@@ -220,6 +223,9 @@ class MethodResultsRepository(BasePostgresRepository):
             self.model.method == method,
             self.model.service_id == service_id
         )
+        if protocol:
+            filters += (self.model.protocol == protocol,)
+
         if scenario_id:
             filters += (self.model.scenario_id == scenario_id,)
 
@@ -243,7 +249,13 @@ class MethodResultsRepository(BasePostgresRepository):
             start_datetime: datetime | None = None
     ) -> dict[MethodResultsModel, MethodResultsAverages]:
         average_results = await asyncio.gather(*[
-            self.get_averages(result.method, service_id, scenario_id, end_datetime, start_datetime)
+            self.get_averages(
+                method=result.method,
+                service_id=service_id,
+                scenario_id=scenario_id,
+                end_datetime=end_datetime,
+                start_datetime=start_datetime
+            )
             for result in results
         ])
 

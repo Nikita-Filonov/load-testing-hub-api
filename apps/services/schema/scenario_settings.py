@@ -1,5 +1,6 @@
 from pydantic import Field, BaseModel
 
+from apps.results.constants.method_results.protocol import ProtocolType
 from utils.schema.database import DatabaseSchema
 from utils.schema.metrics.base import MetricsSchema
 from utils.schema.metrics.content_length import ContentLengthSchema
@@ -12,6 +13,7 @@ class ScenarioResultSettings(MetricsSchema, NumberOfUsersSchema):
 
 class ScenarioMethodSettings(MetricsSchema, ContentLengthSchema):
     method: str
+    protocol: ProtocolType = ProtocolType.GRPC
 
 
 class ScenarioSettings(DatabaseSchema):

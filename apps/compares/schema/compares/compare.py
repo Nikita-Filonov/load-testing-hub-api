@@ -7,6 +7,7 @@ from apps.compares.constants.compare_settings.context import CompareSettingsCont
 from apps.compares.schema.compare_settings import CompareSettings
 from apps.compares.schema.compares.compare_explanation import CompareExplanationSummary, CompareExplanation
 from apps.compares.schema.compares.compare_metric import CompareMetric, MAP_METRIC_KEY_TO_COMPARE_PERCENT_DIRECTION
+from apps.results.constants.method_results.protocol import ProtocolType
 from services.postgres.models.base.metrics import MetricsModel, MetricsModelAverages
 from utils.base.compare import get_compare_percent_with_weight, ComparePercentWithWeight
 from utils.schema.metrics.base import MetricKey, MetricsSchema, MetricName
@@ -116,10 +117,12 @@ class BaseCompare(BaseModel):
 @dataclass
 class BuildMethodResultCompare(BuildBaseCompareParams):
     method: str
+    protocol: ProtocolType
 
 
 class MethodResultCompare(BaseCompare):
     method: str
+    protocol: ProtocolType
     average_content_length: CompareMetric = Field(alias="averageContentLength")
 
     @classmethod
@@ -133,6 +136,7 @@ class MethodResultCompare(BaseCompare):
             method=params.method,
             context=params.context,
             settings=params.settings,
+            protocol=params.protocol,
             **compare_metrics
         )
 

@@ -31,6 +31,7 @@ def get_method_result_compare(
     return MethodResultCompare.build(
         BuildMethodResultCompare(
             method=method_result.method,
+            protocol=method_result.protocol,
             context=CompareSettingsContext.COMPARE_RESULT_WITH_RESULTS,
             settings=CompareSettings.model_validate(settings),
             actual_instance=method_result,

@@ -24,13 +24,17 @@ def get_method_result_compare(
         compare_settings: CompareSettingsModel,
         scenario_settings: ScenarioSettingsModel,
 ) -> MethodResultCompare:
-    method_settings = scenario_settings.get_method_settings_or_default(method_result.method)
+    method_settings = scenario_settings.get_method_settings_or_default(
+        method=method_result.method,
+        protocol=method_result.protocol
+    )
 
     return MethodResultCompare.build(
         BuildMethodResultCompare(
             method=method_result.method,
             context=CompareSettingsContext.COMPARE_RESULT_WITH_SCENARIO,
             settings=CompareSettings.model_validate(compare_settings),
+            protocol=method_result.protocol,
             actual_instance=method_result,
             expected_instance=ScenarioMethodSettings.model_validate(method_settings)
         ),

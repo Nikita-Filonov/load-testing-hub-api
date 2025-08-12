@@ -42,7 +42,7 @@ async def get_compare_method_results_history(
 
     compares = [
         CompareResultsHistory[T](
-            title=f'Current: {get_short_method(method_result.method)}',
+            title=f'Current: {get_short_method(method_result.method, method_result.protocol)}',
             results=[
                 result_type(metrics=result.to_dict(), datetime=result.datetime)
                 for result in method_results_history

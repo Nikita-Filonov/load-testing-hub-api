@@ -20,6 +20,7 @@ def get_method_result_summary_compare(
                 method=result.method,
                 context=CompareSettingsContext.COMPARE_WITH_AVERAGE,
                 settings=settings,
+                protocol=result.protocol,
                 actual_instance=result,
                 expected_instance=method_result_averages
             ),
@@ -29,6 +30,7 @@ def get_method_result_summary_compare(
                 method=result.method,
                 context=CompareSettingsContext.COMPARE_WITH_PREVIOUS,
                 settings=settings,
+                protocol=result.protocol,
                 actual_instance=result,
                 expected_instance=previous_result
             )

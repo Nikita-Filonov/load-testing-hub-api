@@ -4,6 +4,7 @@ from typing import Self
 from fastapi import Query
 from pydantic import Field, BaseModel
 
+from apps.results.constants.method_results.protocol import ProtocolType
 from utils.schema.metrics.number_of_requests import NumberOfRequestsSchema
 from utils.schema.metrics.requests_per_second import RequestsPerSecondSchema
 from utils.schema.metrics.response_times import ResponseTimesSchema
@@ -12,6 +13,7 @@ from utils.schema.query import QuerySchema
 
 class MethodsAnalytics(BaseModel):
     method: str
+    protocol: ProtocolType
 
 
 class MethodsResponseTimesAnalytics(MethodsAnalytics, ResponseTimesSchema):

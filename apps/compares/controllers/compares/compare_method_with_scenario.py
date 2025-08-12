@@ -19,6 +19,7 @@ async def get_compare_method_with_scenario(
 ) -> GetCompareMethodWithScenarioResponse:
     method_result_averages = await method_results_repository.get_averages(
         method=query.method,
+        protocol=query.protocol,
         service_id=query.service_id,
         scenario_id=query.scenario_id,
         end_datetime=query.end_datetime,
@@ -27,7 +28,10 @@ async def get_compare_method_with_scenario(
 
     compare_settings = await compare_settings_repository.get_or_create(query.service_id)
     scenario_settings = await scenario_settings_repository.get_or_create(query.scenario_id)
-    method_settings = scenario_settings.get_method_settings_or_default(query.method)
+    method_settings = scenario_settings.get_method_settings_or_default(
+        method=query.method,
+        protocol=query.protocol
+    )
 
     return GetCompareMethodWithScenarioResponse(
         compare=MethodResultCompare.build(
@@ -35,6 +39,7 @@ async def get_compare_method_with_scenario(
                 method=query.method,
                 context=CompareSettingsContext.COMPARE_METHOD_WITH_SCENARIO,
                 settings=CompareSettings.model_validate(compare_settings),
+                protocol=query.protocol,
                 actual_instance=method_result_averages,
                 expected_instance=ScenarioMethodSettings.model_validate(method_settings)
             ),

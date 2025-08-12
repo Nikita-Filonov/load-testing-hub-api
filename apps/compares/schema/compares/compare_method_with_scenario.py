@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from apps.compares.schema.compares.compare import MethodResultCompare
 from apps.methods.schema.methods.schema import GetMethodDetailsQuery
+from apps.results.constants.method_results.protocol import ProtocolType
 
 
 class GetCompareMethodWithScenarioQuery(GetMethodDetailsQuery):
@@ -16,6 +17,7 @@ class GetCompareMethodWithScenarioQuery(GetMethodDetailsQuery):
     async def as_query(
             cls,
             method: str = Query(),
+            protocol: ProtocolType = Query(),
             service_id: int = Query(alias="serviceId"),
             scenario_id: int = Query(alias="scenarioId"),
             end_datetime: datetime = Query(alias="endDatetime"),
@@ -23,6 +25,7 @@ class GetCompareMethodWithScenarioQuery(GetMethodDetailsQuery):
     ) -> Self:
         return GetCompareMethodWithScenarioQuery(
             method=method,
+            protocol=protocol,
             service_id=service_id,
             scenario_id=scenario_id,
             end_datetime=end_datetime,
