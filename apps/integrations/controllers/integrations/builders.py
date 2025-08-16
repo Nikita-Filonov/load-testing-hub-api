@@ -14,7 +14,7 @@ def get_kibana_integration_url(
         load_test_result: LoadTestResultsModel,
 ) -> str:
     return integration.get_ready_url(
-        host=settings.kibana_url.host,
+        base_url=settings.normalized_kibana_url,
         to_time=str(load_test_result.finished_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'),
         from_time=str(load_test_result.started_at.strftime('%Y-%m-%dT%H:%M:%S') + '.000Z'),
     )
@@ -26,14 +26,14 @@ def get_grafana_integration_url(
         load_test_result: LoadTestResultsModel,
 ) -> str:
     return integration.get_ready_url(
-        host=settings.grafana_url.host,
+        base_url=settings.normalized_grafana_url,
         to_time=str(int(load_test_result.finished_at.timestamp()) * 1000),
         from_time=str(int(load_test_result.started_at.timestamp()) * 1000),
     )
 
 
 def get_kubernetes_integration_url(settings: Settings, integration: IntegrationsModel) -> str:
-    return integration.get_ready_url(host=settings.kubernetes_url.host)
+    return integration.get_ready_url(base_url=settings.normalized_kubernetes_url)
 
 
 async def build_integration_url(

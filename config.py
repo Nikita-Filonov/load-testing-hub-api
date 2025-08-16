@@ -34,6 +34,18 @@ class Settings(BaseSettings):
     grafana_url: HttpUrl | None = Field(default=None)
     kubernetes_url: HttpUrl | None = Field(default=None)
 
+    @property
+    def normalized_kibana_url(self) -> str:
+        return str(self.kibana_url).rstrip('/')
+
+    @property
+    def normalized_grafana_url(self) -> str:
+        return str(self.grafana_url).rstrip('/')
+
+    @property
+    def normalized_kubernetes_url(self) -> str:
+        return str(self.kubernetes_url).rstrip('/')
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -1,7 +1,7 @@
 from typing import Self
 
 from fastapi import Query
-from pydantic import Field, BaseModel, HttpUrl
+from pydantic import Field, BaseModel
 
 from apps.integrations.constants.integrations.environment import IntegrationEnvironmentType
 from apps.integrations.constants.integrations.system import IntegrationSystemType
@@ -26,7 +26,7 @@ class CreateIntegrationRequest(BaseModel):
     service_id: int = Field(alias="serviceId")
     system_type: IntegrationSystemType = Field(alias="systemType")
     order_index: int = Field(alias="orderIndex")
-    url_template: HttpUrl = Field(alias="urlTemplate")
+    url_template: str = Field(alias="urlTemplate")
     environment_type: IntegrationEnvironmentType = Field(alias="environmentType")
 
 
@@ -34,7 +34,7 @@ class UpdateIntegrationRequest(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=100)
     system_type: IntegrationSystemType | None = Field(alias="systemType", default=None)
     order_index: int | None = Field(alias="orderIndex", default=None)
-    url_template: HttpUrl | None = Field(alias="urlTemplate", default=None)
+    url_template: str | None = Field(alias="urlTemplate", default=None)
     environment_type: IntegrationEnvironmentType | None = Field(
         alias="environmentType", default=None
     )

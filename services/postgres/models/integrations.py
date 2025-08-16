@@ -22,8 +22,8 @@ class IntegrationsModel(StatusModel):
 
     def get_ready_url(
             self,
-            host: str,
+            base_url: str,
             to_time: str | None = None,
             from_time: str | None = name
     ) -> str:
-        return self.url_template.format(host=host, to_time=to_time, from_time=from_time)
+        return self.url_template.format(base_url=base_url, to_time=to_time, from_time=from_time)
